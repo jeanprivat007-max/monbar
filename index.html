@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caisse Pro - Quantités Groupées</title>
+    <title>Caisse Pro V10 - 11 Tables</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .table-selected { background-color: #ef4444 !important; color: white; border-color: #b91c1c; transform: scale(0.95); }
         .modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+        #panier-liste { font-family: monospace; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -15,48 +16,49 @@
     <nav class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="flex justify-between items-center max-w-lg mx-auto">
             <div>
-                <h1 class="font-bold text-lg leading-none uppercase">Bar Caisse</h1>
-                <div id="status" class="text-[10px] text-green-400 font-bold uppercase italic font-mono">Connecté</div>
+                <h1 class="font-bold text-lg leading-none">GESTION BAR</h1>
+                <div id="status" class="text-[10px] text-green-400 font-bold uppercase italic font-mono">Imprimante Prête</div>
             </div>
             <div class="flex gap-2">
-                <button onclick="ouvrirAdmin()" class="bg-slate-700 p-2 rounded-lg text-lg">⚙️</button>
+                <button onclick="ouvrirAdmin()" class="bg-slate-700 p-2 rounded-lg">⚙️</button>
                 <button onclick="ouvrirRapport()" class="bg-blue-600 px-3 py-2 rounded-lg text-xs font-bold uppercase">📊 Rapport</button>
             </div>
         </div>
     </nav>
 
     <main class="max-w-lg mx-auto p-4 pb-48">
-        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Table</h2>
-        <div class="grid grid-cols-3 gap-3 mb-6" id="grid-tables"></div>
+        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 text-center">Sélectionner une Table</h2>
+        <div class="grid grid-cols-3 gap-2 mb-6" id="grid-tables"></div>
 
         <div id="section-menu" class="hidden">
-            <h2 id="title-commande" class="text-xl font-black text-slate-800 mb-4 border-l-4 border-blue-600 pl-3 uppercase text-sm">Sélection</h2>
+            <h2 id="title-commande" class="text-xl font-black text-slate-800 mb-4 border-l-4 border-blue-600 pl-3 uppercase text-sm">Menu</h2>
             <div id="container-articles" class="grid gap-3"></div>
         </div>
     </main>
 
     <div id="footer-panier" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-2xl translate-y-full transition-transform z-40">
         <div class="max-w-lg mx-auto">
-            <div id="panier-liste" class="mb-4 text-sm font-bold text-slate-700 max-h-32 overflow-y-auto bg-gray-50 p-3 rounded-xl">
-                </div>
-            <div class="flex justify-between items-center mb-4">
-                <span class="text-gray-400 font-bold uppercase text-[10px]">Total</span>
+            <div id="panier-liste" class="mb-4 text-sm font-bold text-slate-700 max-h-32 overflow-y-auto bg-gray-50 p-3 rounded-xl"></div>
+            
+            <div class="flex justify-between items-center mb-4 border-t pt-2">
+                <span class="text-gray-500 font-bold uppercase text-xs">Total à payer :</span>
                 <span id="total-prix" class="text-3xl font-black text-red-600">0 F</span>
             </div>
+            
             <div class="flex gap-2">
                 <button onclick="viderCommande()" class="bg-gray-100 text-gray-400 px-4 py-4 rounded-xl font-bold uppercase text-[10px]">Vider</button>
-                <button onclick="encaisserEtImprimer()" class="flex-1 bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-lg">🖨️ IMPRIMER</button>
+                <button onclick="encaisserEtImprimer()" class="flex-1 bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-lg active:bg-green-700">🖨️ IMPRIMER LE REÇU</button>
             </div>
         </div>
     </div>
 
     <div id="modal-admin" class="modal fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-            <h2 class="text-xl font-black mb-4 flex justify-between">Gestion Menu <button onclick="fermerAdmin()">&times;</button></h2>
+            <h2 class="text-xl font-black mb-4 flex justify-between">Configuration <button onclick="fermerAdmin()">&times;</button></h2>
             <div class="space-y-4 mb-6">
-                <input id="new-nom" type="text" placeholder="Nom du produit" class="w-full border p-3 rounded-xl">
-                <input id="new-prix" type="number" placeholder="Prix" class="w-full border p-3 rounded-xl">
-                <button onclick="sauvegarderProduit()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">➕ Ajouter</button>
+                <input id="new-nom" type="text" placeholder="Nom du produit" class="w-full border p-3 rounded-xl outline-blue-500">
+                <input id="new-prix" type="number" placeholder="Prix de vente" class="w-full border p-3 rounded-xl outline-blue-500">
+                <button onclick="sauvegarderProduit()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">➕ Ajouter au Menu</button>
             </div>
             <div id="admin-liste" class="max-h-48 overflow-y-auto space-y-2 border-t pt-4"></div>
         </div>
@@ -64,22 +66,23 @@
 
     <script>
         let tableActuelle = null;
-        let panier = {}; // Changement ici : on utilise un objet pour grouper
+        let panier = {}; 
         let charPrinter = null;
 
         let MENU = JSON.parse(localStorage.getItem('bar_menu_custom')) || [
             { nom: "Guiness", prix: 1000 },
             { nom: "Bock 66", prix: 600 },
-            { nom: "Demi Poulet Soupe", prix: 2500 }
+            { nom: "Demi Poulet", prix: 2500 }
         ];
 
-        let ventesJour = JSON.parse(localStorage.getItem('ventes_bar_v9')) || [];
+        let ventesJour = JSON.parse(localStorage.getItem('ventes_bar_v10')) || [];
 
         function initApp() {
             const grid = document.getElementById('grid-tables');
             grid.innerHTML = "";
-            for(let i=1; i<=6; i++) {
-                grid.innerHTML += `<button onclick="choisirTable(${i})" id="btn-t-${i}" class="bg-white border-2 border-slate-200 py-4 rounded-xl font-black text-slate-400">T${i}</button>`;
+            // Création de 11 tables
+            for(let i=1; i<=11; i++) {
+                grid.innerHTML += `<button onclick="choisirTable(${i})" id="btn-t-${i}" class="bg-white border-2 border-slate-200 py-3 rounded-xl font-bold text-slate-500 text-sm">Table ${i}</button>`;
             }
             afficherMenu();
         }
@@ -88,10 +91,9 @@
             const container = document.getElementById('container-articles');
             const adminListe = document.getElementById('admin-liste');
             container.innerHTML = ""; adminListe.innerHTML = "";
-
             MENU.sort((a,b) => a.nom.localeCompare(b.nom)).forEach((item, index) => {
                 container.innerHTML += `
-                    <button onclick="ajouterItem('${item.nom}', ${item.prix})" class="w-full bg-white border-2 p-4 rounded-xl flex justify-between items-center shadow-sm">
+                    <button onclick="ajouterItem('${item.nom}', ${item.prix})" class="w-full bg-white border-2 p-4 rounded-xl flex justify-between items-center shadow-sm active:bg-blue-50">
                         <span class="font-bold text-slate-700">${item.nom}</span>
                         <span class="text-blue-700 font-black">${item.prix}F</span>
                     </button>`;
@@ -110,13 +112,9 @@
             document.getElementById('section-menu').classList.remove('hidden');
         }
 
-        // LOGIQUE DU PANIER REGROUPÉ
         function ajouterItem(nom, prix) {
-            if (panier[nom]) {
-                panier[nom].qte += 1;
-            } else {
-                panier[nom] = { prix: prix, qte: 1 };
-            }
+            if (panier[nom]) { panier[nom].qte += 1; } 
+            else { panier[nom] = { prix: prix, qte: 1 }; }
             majPanierUI();
         }
 
@@ -124,23 +122,21 @@
             const liste = document.getElementById('panier-liste');
             liste.innerHTML = "";
             let total = 0;
-            
             for (let [nom, data] of Object.entries(panier)) {
-                total += (data.prix * data.qte);
+                let sousTotal = data.prix * data.qte;
+                total += sousTotal;
                 liste.innerHTML += `
                     <div class="flex justify-between py-1 border-b border-dashed">
-                        <span>${nom} <span class="text-blue-600 font-black ml-2">x${data.qte}</span></span>
-                        <span>${data.prix * data.qte} F</span>
+                        <span>${nom} <span class="text-blue-600">x${data.qte}</span></span>
+                        <span>${sousTotal} F</span>
                     </div>`;
             }
-            
             document.getElementById('total-prix').innerText = total + " F";
             document.getElementById('footer-panier').classList.toggle('translate-y-full', total === 0);
         }
 
         function viderCommande() { panier = {}; majPanierUI(); }
 
-        // ADMIN FUNCTIONS
         function ouvrirAdmin() { document.getElementById('modal-admin').classList.remove('hidden'); }
         function fermerAdmin() { document.getElementById('modal-admin').classList.add('hidden'); }
         function sauvegarderProduit() {
@@ -158,7 +154,6 @@
             afficherMenu();
         }
 
-        // IMPRESSION
         async function encaisserEtImprimer() {
             try {
                 if (!charPrinter) {
@@ -171,40 +166,47 @@
                     charPrinter = (await services[0].getCharacteristics()).find(c => c.properties.write || c.properties.writeWithoutResponse);
                 }
 
-                let t = "\n      *** MON BAR ***\n";
-                t += "DATE: " + new Date().toLocaleTimeString() + "  T:" + tableActuelle + "\n";
+                let t = "\n      *** REÇU CLIENT ***\n";
+                t += "DATE: " + new Date().toLocaleTimeString() + "  TABLE: " + tableActuelle + "\n";
                 t += "--------------------------------\n";
                 
-                let totalCaisse = 0;
+                let grandTotal = 0;
                 for (let [nom, data] of Object.entries(panier)) {
-                    // Pour chaque produit, on imprime autant de lignes que de quantité
-                    for(let i=0; i < data.qte; i++) {
-                        totalCaisse += data.prix;
-                        let n = nom.substring(0, 20);
-                        let p = data.prix.toString() + "F";
-                        t += n + " ".repeat(32 - n.length - p.length) + p + "\n";
-                        // Ajouter au rapport journalier
-                        ventesJour.push({nom, prix: data.prix});
-                    }
+                    let totalItem = data.prix * data.qte;
+                    grandTotal += totalItem;
+                    
+                    // Format: Nom xQté
+                    let ligneNom = nom + " x" + data.qte;
+                    let lignePrix = totalItem + "F";
+                    
+                    // Calcul des espaces pour aligner le prix à droite (32 colonnes)
+                    let espaces = " ".repeat(Math.max(1, 32 - ligneNom.length - lignePrix.length));
+                    t += ligneNom + espaces + lignePrix + "\n";
+                    
+                    // Archive pour le rapport
+                    for(let i=0; i<data.qte; i++) { ventesJour.push({nom, prix: data.prix}); }
                 }
                 
                 t += "--------------------------------\n";
-                let totalStr = totalCaisse + " FCFA";
-                t += "TOTAL NET:" + " ".repeat(32 - 10 - totalStr.length) + totalStr + "\n\n\n";
+                let labelTotal = "TOTAL À PAYER:";
+                let valTotal = grandTotal + " FCFA";
+                let espFinal = " ".repeat(Math.max(1, 32 - labelTotal.length - valTotal.length));
+                
+                t += labelTotal + espFinal + valTotal + "\n\n\n\n";
 
                 await charPrinter.writeValue(new Uint8Array([0x1B, 0x40])); // Init
                 await charPrinter.writeValue(new Uint8Array([0x1B, 0x45, 0x01])); // Gras
                 await charPrinter.writeValue(new TextEncoder().encode(t));
-                await charPrinter.writeValue(new Uint8Array([0x0A, 0x0A, 0x0A])); // Feed
+                await charPrinter.writeValue(new Uint8Array([0x0A, 0x0A, 0x0A])); // Fin
                 
-                localStorage.setItem('ventes_bar_v9', JSON.stringify(ventesJour));
+                localStorage.setItem('ventes_bar_v10', JSON.stringify(ventesJour));
                 viderCommande();
-            } catch (e) { charPrinter = null; alert(e); }
+            } catch (e) { charPrinter = null; alert("Erreur Bluetooth: " + e); }
         }
 
         function ouvrirRapport() {
             let total = 0; ventesJour.forEach(v => total += v.prix);
-            alert("RECETTE TOTALE: " + total + " F\nArticles vendus: " + ventesJour.length);
+            alert("RECETTE TOTALE DU JOUR: " + total + " F\nNombre d'articles: " + ventesJour.length);
         }
 
         initApp();
