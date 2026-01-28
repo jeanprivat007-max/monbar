@@ -3,6 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palauh Pro V35 - Full Cloud</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .table-selected { background-color: #ef4444 !important; color: white; transform: scale(0.95); border-color: #7f1d1d; }
+        .modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-slate-900">
+
+    <nav class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-50">
+        <div class="max-w-lg mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="font-bold text-lg uppercase tracking-tighter">Palauh <span class="text-emerald-400">DB</span></h1>
+                <div class="text-[8px] text-slate-400 font-mono uppercase">Version : 28/01/2026 - 12:45</div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="ouvrirAdmin()" class="bg-slate-700 p-2 rounded-lg text-xs font-bold uppercase italic">⚙️ Gérer</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-lg mx-auto p-4 pb-48">
+        <div id="loading-status" class="text-center py-10">
+            <p class="text-[10px] font-black text-emerald-500 animate-pulse uppercase tracking-widest">Initialisation Cloud...</p>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mb-6" id="grid-tables"></div>
+        <div id="section-menu" class="hidden">
+            <div class="bg-slate-800 text-white p-3 rounded-xl mb-4 text-[10px] font-bold flex justify-between uppercase">
+                <span id="label-serveur-table">Serveur : --</span>
+                <span id="label-num-table">Table : --</span>
+            </div>
+            <div id="container-articles" class="grid gap-3"></div>
+        </div>
+    </main>
+
+    <div id="modal-admin" class="modal fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-black">Gestion Staff & Produits</h2>
+                <button onclick="fermerAdmin()" class="text-2xl text-gray-400">&times;</button>
+            </div>
+
+            <div class="mb-6 p-4 bg-orange-50 rounded-2xl border border-orange-100">
+                <h3 class="text-[10px] font-black text-orange-700 uppercase mb-3 italic">👥 Équipe Hôtel Palauh</h3>
+                <div class="space-y-3">
+                    <div class="flex gap-2">
+                        <input id="new-serveur" type="text" placeholder="Nom nouveau" class="flex-1 p-2 border rounded-lg text-sm">
+                        <button onclick="ajouterServeur()" class="bg-orange-500 text-white px-3 rounded-lg text-xs font-bold uppercase">Ajouter</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <select id="select-staff" class="flex-1 p-2 border rounded-lg text-xs"></select>
+                        <select id="select-table-assign" class="flex-1 p-2 border rounded-lg text-xs">
+                            <option value="">Table...</option>
+                            <script>for(let i=1;i<=11;i++) document.write(`<option value="${i}">Table ${i}</option>`)</script>
+                        </select>
+                    </div>
+                    <button onclick="assignerServeur()" class="w-full bg-slate-800 text-white font-bold py-2 rounded-lg text-xs uppercase">Valider l'affectation</button>
+                </div>
+            </div>
+
+            <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                <h3 class="text-[10px] font-black text-emerald-700 uppercase mb-3 italic">📦 Stock Cloud</h3>
+                <div class="space-y-2">
+                    <input id="p-nom" type="text" placeholder="Nom du produit" class="w-full p-2 border rounded-lg text-sm">
+                    <div class="flex gap-2">
+                        <input id="p-prix" type="number" placeholder="Prix" class="w-full p-2 border rounded-lg text-sm">
+                        <input id="p-stock" type="number" placeholder="Quantité initiale" class="w-full p-2 border rounded-lg text-sm">
+                    </div>
+                    <button onclick="creerProduitSurCloud()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-sm uppercase">Créer sur Supabase</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SB_URL = "https://uunppeehuihmeztdrntg.supabase.co";
+        const SB_KEY = "sb_publishable_v6p7MI-2rNjodCp7oyydIQ_8kCu_1xm";
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        let tableActuelle = null;
+        let MENU = [];
+        let STAFF = JSON.parse(localStorage.getItem('bar_staff')) || [];
+        let AFFECTATIONS = JSON.parse(localStorage.getItem('bar_aff')) || {};
+
+        async function initApp() {
+            const { data, error } = await _supabase.from('stocks').select('*').order('nom');
+            if (!error && data) {
+                MENU = data;
+                document.getElementById('loading-status').classList.add('hidden');
+                afficherMenu();
+            }
+            majSelectStaff();
+            const grid = document.getElementById('grid-tables'); grid.innerHTML = "";
+            for(let i=1; i<=11; i++) {
+                let s = AFFECTATIONS[i] || "Libre";
+                grid.innerHTML += `<button onclick="choisirTable(${i})" id="btn-t-${i}" class="bg-white border-2 border-slate-100 py-4 rounded-xl flex flex-col items-center shadow-sm"><span class="font-bold text-xs">T${i}</span><span class="text-[8px] uppercase text-emerald-600 font-bold">${s}</span></button>`;
+            }
+        }
+
+        function majSelectStaff() {
+            const s = document.getElementById('select-staff');
+            s.innerHTML = '<option value="">Choisir serveur...</option>';
+            STAFF.forEach(name => s.innerHTML += `<option value="${name}">${name}</option>`);
+        }
+
+        function ajouterServeur() {
+            let n = document.getElementById('new-serveur').value;
+            if(n) { STAFF.push(n); localStorage.setItem('bar_staff', JSON.stringify(STAFF)); majSelectStaff(); document.getElementById('new-serveur').value = ""; }
+        }
+
+        function assignerServeur() {
+            let s = document.getElementById('select-staff').value; let t = document.getElementById('select-table-assign').value;
+            if(s && t) { AFFECTATIONS[t] = s; localStorage.setItem('bar_aff', JSON.stringify(AFFECTATIONS)); initApp(); alert("Affectation réussie !"); }
+        }
+
+        async function creerProduitSurCloud() {
+            const nom = document.getElementById('p-nom').value;
+            const prix = parseInt(document.getElementById('p-prix').value);
+            const stock = parseInt(document.getElementById('p-stock').value);
+            try {
+                const { error } = await _supabase.from('stocks').insert([{ nom: nom, prix: prix, quantite: stock, seuil_alerte: 5 }]);
+                if (error) throw error;
+                alert("Produit ajouté avec succès !"); location.reload();
+            } catch (e) { alert("Erreur de sécurité Supabase : Vérifiez vos 'Policies'"); }
+        }
+
+        function afficherMenu() {
+            const container = document.getElementById('container-articles'); container.innerHTML = "";
+            MENU.forEach(item => {
+                const s = item.quantite || 0;
+                container.innerHTML += `<button class="w-full bg-white border-2 p-4 rounded-xl flex justify-between items-center"><div class="text-left"><p class="font-bold text-slate-700">${item.nom}</p><p class="text-[9px] text-gray-400 uppercase tracking-tighter">Stock : ${s}</p></div><p class="font-black text-emerald-600">${item.prix} F</p></button>`;
+            });
+        }
+
+        function choisirTable(num) {
+            tableActuelle = num;
+            document.querySelectorAll('#grid-tables button').forEach(b => b.classList.remove('table-selected'));
+            document.getElementById('btn-t-'+num).classList.add('table-selected');
+            document.getElementById('section-menu').classList.remove('hidden');
+            document.getElementById('label-serveur-table').innerText = "Serveur : " + (AFFECTATIONS[num] || "Inconnu");
+            document.getElementById('label-num-table').innerText = "Table : " + num;
+        }
+
+        function ouvrirAdmin() { document.getElementById('modal-admin').classList.remove('hidden'); }
+        function fermerAdmin() { document.getElementById('modal-admin').classList.add('hidden'); }
+
+        initApp();
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Palauh Pro V33 - Cloud Time</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -163,3 +318,4 @@
     </script>
 </body>
 </html>
+
