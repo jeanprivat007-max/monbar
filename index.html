@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bar Stock V17 - CLOUD DG</title>
+    <title>Bar Stock V19 - CLOUD OK</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .table-selected { background-color: #ef4444 !important; color: white; border-color: #b91c1c; transform: scale(0.95); }
@@ -15,8 +15,8 @@
     <nav class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="max-w-lg mx-auto flex justify-between items-center">
             <div>
-                <h1 class="font-bold text-lg leading-none uppercase">BAR CLOUD <span class="text-yellow-400 text-xs ml-1">V17</span></h1>
-                <div id="version-info" class="text-[9px] text-slate-400 mt-1 font-mono uppercase">MAJ: 28/01/2026 12:45</div>
+                <h1 class="font-bold text-lg leading-none uppercase">BAR PRO <span class="text-yellow-400 text-xs ml-1">V19</span></h1>
+                <div id="version-info" class="text-[9px] text-slate-400 mt-1 font-mono uppercase">MODE CLOUD DG ACTIF</div>
             </div>
             <div class="flex gap-2">
                 <button onclick="ouvrirAdmin()" class="bg-slate-700 p-2 rounded-lg text-sm font-bold">⚙️ STOCK</button>
@@ -28,7 +28,7 @@
     <main class="max-w-lg mx-auto p-4 pb-48">
         <div class="grid grid-cols-3 gap-2 mb-6" id="grid-tables"></div>
         <div id="section-menu" class="hidden">
-            <h2 class="text-xl font-black text-slate-800 mb-4 border-l-4 border-blue-600 pl-3 uppercase text-sm font-mono">Sélection Produits</h2>
+            <h2 class="text-xl font-black text-slate-800 mb-4 border-l-4 border-blue-600 pl-3 uppercase text-sm font-mono">Vente</h2>
             <div id="container-articles" class="grid gap-3"></div>
         </div>
     </main>
@@ -40,14 +40,14 @@
                 <span class="text-gray-500 font-bold uppercase text-xs">A payer :</span>
                 <span id="total-prix" class="text-3xl font-black text-red-600">0 F</span>
             </div>
-            <button onclick="encaisserEtImprimer()" class="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-lg">🖨️ IMPRIMER & CLOUD</button>
-            <button onclick="viderCommande()" class="w-full text-gray-400 text-[10px] font-bold mt-2 uppercase">Vider la commande</button>
+            <button id="btn-encaisser" onclick="encaisserEtImprimer()" class="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-lg">🖨️ IMPRIMER & CLOUD</button>
+            <button onclick="viderCommande()" class="w-full text-gray-400 text-[10px] font-bold mt-2 uppercase">Vider</button>
         </div>
     </div>
 
     <div id="modal-admin" class="modal fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6 text-slate-800">
+            <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-black">Gestion du Stock</h2>
                 <button onclick="fermerAdmin()" class="text-2xl text-gray-400">&times;</button>
             </div>
@@ -55,23 +55,22 @@
                 <h3 class="text-xs font-black text-green-700 uppercase mb-3">📦 Ravitaillement</h3>
                 <div class="space-y-3">
                     <select id="select-produit-exist" class="w-full p-3 border rounded-xl bg-white"></select>
-                    <input id="qte-arrivage" type="number" placeholder="Quantité ajoutée" class="w-full p-3 border rounded-xl">
-                    <button onclick="ajouterArrivage()" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl">Valider Stock</button>
+                    <input id="qte-arrivage" type="number" placeholder="Quantité" class="w-full p-3 border rounded-xl">
+                    <button onclick="ajouterArrivage()" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl">Mettre à jour</button>
                 </div>
             </div>
             <div id="admin-liste" class="space-y-2 border-t pt-4 text-[10px] text-slate-600"></div>
         </div>
-    </nav>
+    </div>
 
     <script>
-        // LIEN DE TON DEPLOIEMENT GOOGLE APPS SCRIPT
-        const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzmO_OD1_INIwqZ1P-WpIMLVu2kPnQvZYCozbK3gAJd954_ZGViaAwGf0RYmKGj2qDu/exec";
+        // LIEN CLOUD DG VALIDE
+        const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzmO_OD1_INlwqZ1P-WpIMLVu2kfPnQvZYCozbK3gAJd954_ZGViAwGf0RYmKGj2qDu/exec";
 
         let tableActuelle = null;
         let panier = {}; 
         let charPrinter = null;
         
-        // --- CHARGEMENT DE TA LISTE DE PRODUITS COMPLETE ---
         const PRODUITS_INITIAUX = [
             { nom: "Bock 66", prix: 600 }, { nom: "Desperados", prix: 700 },
             { nom: "Valpierre Petit", prix: 1000 }, { nom: "Valpierre Grand", prix: 2000 },
@@ -98,8 +97,11 @@
             { nom: "Bar Kit Beaufort", prix: 2500 }, { nom: "Bar Kit Desperados", prix: 2500 }
         ];
 
-        let MENU = JSON.parse(localStorage.getItem('bar_menu_v17')) || PRODUITS_INITIAUX.map(p => ({...p, stock: 0}));
-        let ventesJour = JSON.parse(localStorage.getItem('ventes_bar_v17')) || [];
+        // Initialisation forcée à 20 si le stock est vide
+        let storageMenu = JSON.parse(localStorage.getItem('bar_menu_v19'));
+        let MENU = storageMenu || PRODUITS_INITIAUX.map(p => ({...p, stock: 20}));
+        
+        let ventesJour = JSON.parse(localStorage.getItem('ventes_bar_v19')) || [];
 
         function initApp() {
             const grid = document.getElementById('grid-tables');
@@ -115,7 +117,7 @@
             const adminListe = document.getElementById('admin-liste');
             const selectExist = document.getElementById('select-produit-exist');
             container.innerHTML = ""; adminListe.innerHTML = "";
-            selectExist.innerHTML = '<option value="">-- Choisir Produit --</option>';
+            selectExist.innerHTML = '<option value="">-- Sélectionner --</option>';
 
             MENU.sort((a,b) => a.nom.localeCompare(b.nom)).forEach((item, index) => {
                 const epuise = item.stock <= 0;
@@ -125,7 +127,7 @@
                         <span class="font-black ${epuise ? 'text-gray-400' : 'text-blue-700'}">${item.prix}F</span>
                     </button>`;
                 selectExist.innerHTML += `<option value="${index}">${item.nom}</option>`;
-                adminListe.innerHTML += `<div class="flex justify-between p-2 border-b"><span>${item.nom}</span><button onclick="supprimerProduit(${index})" class="text-red-500 font-bold uppercase">X</button></div>`;
+                adminListe.innerHTML += `<div class="flex justify-between p-2 border-b"><span>${item.nom} (Stock: ${item.stock})</span><button onclick="supprimerProduit(${index})" class="text-red-500 font-bold uppercase">X</button></div>`;
             });
         }
 
@@ -165,16 +167,17 @@
             const qte = parseInt(document.getElementById('qte-arrivage').value);
             if(idx !== "" && !isNaN(qte)) { 
                 MENU[idx].stock += qte; 
-                localStorage.setItem('bar_menu_v17', JSON.stringify(MENU));
+                localStorage.setItem('bar_menu_v19', JSON.stringify(MENU));
                 document.getElementById('qte-arrivage').value = "";
                 afficherMenu();
                 alert("Stock mis à jour !");
             }
         }
 
-        function supprimerProduit(idx) { if(confirm("Supprimer ?")) { MENU.splice(idx,1); localStorage.setItem('bar_menu_v17', JSON.stringify(MENU)); afficherMenu(); } }
+        function supprimerProduit(idx) { if(confirm("Supprimer ?")) { MENU.splice(idx,1); localStorage.setItem('bar_menu_v19', JSON.stringify(MENU)); afficherMenu(); } }
 
         async function encaisserEtImprimer() {
+            const btn = document.getElementById('btn-encaisser');
             try {
                 if (!charPrinter) {
                     const device = await navigator.bluetooth.requestDevice({
@@ -186,7 +189,10 @@
                     charPrinter = (await services[0].getCharacteristics()).find(c => c.properties.write || c.properties.writeWithoutResponse);
                 }
 
-                // --- CLOUD & STOCK ---
+                btn.innerText = "ENVOI CLOUD DG...";
+                btn.disabled = true;
+
+                // --- ENVOI CLOUD & MAJ STOCK ---
                 for (let [nom, d] of Object.entries(panier)) {
                     fetch(GOOGLE_URL, {
                         method: 'POST',
@@ -196,15 +202,15 @@
                     MENU.find(m => m.nom === nom).stock -= d.qte;
                     for(let i=0; i<d.qte; i++) ventesJour.push({nom, prix: d.prix});
                 }
-                localStorage.setItem('bar_menu_v17', JSON.stringify(MENU));
-                localStorage.setItem('ventes_bar_v17', JSON.stringify(ventesJour));
+                localStorage.setItem('bar_menu_v19', JSON.stringify(MENU));
+                localStorage.setItem('ventes_bar_v19', JSON.stringify(ventesJour));
 
-                // --- IMPRESSION LIGNE PAR LIGNE ---
+                // --- IMPRESSION ---
                 const enc = new TextEncoder();
                 const sleep = ms => new Promise(r => setTimeout(r, ms));
                 await charPrinter.writeValue(new Uint8Array([0x1B, 0x40]));
 
-                let lignes = ["\n      *** RECU CLIENT ***\n", `T:${tableActuelle} ${new Date().toLocaleTimeString()}\n`, "--------------------------------\n"];
+                let lignes = ["\n      *** RECU CLIENT ***\n", `TABLE : ${tableActuelle}\n`, `HEURE : ${new Date().toLocaleTimeString()}\n`, "--------------------------------\n"];
                 let total = 0;
                 for (let [nom, d] of Object.entries(panier)) {
                     let st = d.prix * d.qte; total += st;
@@ -220,12 +226,20 @@
 
                 viderCommande();
                 afficherMenu();
-            } catch (e) { charPrinter = null; alert(e); }
+                btn.innerText = "🖨️ IMPRIMER & CLOUD";
+                btn.disabled = false;
+                alert("SUCCÈS : Ticket imprimé et envoyé au DG !");
+            } catch (e) { 
+                btn.innerText = "🖨️ IMPRIMER & CLOUD";
+                btn.disabled = false;
+                charPrinter = null; 
+                alert("Erreur : " + e); 
+            }
         }
 
         function ouvrirRapport() {
             let t = 0; ventesJour.forEach(v => t += v.prix);
-            alert("TOTAL VENTES: " + t + " F");
+            alert("CAISSE LOCALE : " + t + " F");
         }
         initApp();
     </script>
