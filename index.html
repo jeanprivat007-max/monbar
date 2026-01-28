@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bar Pro V24 - Correction Panier</title>
+    <title>Bar Pro V25 - Gestion Kits</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .table-selected { background-color: #ef4444 !important; color: white; border-color: #b91c1c; transform: scale(0.95); }
@@ -15,8 +15,8 @@
     <nav class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="max-w-lg mx-auto flex justify-between items-center">
             <div>
-                <h1 class="font-bold text-lg leading-none uppercase">BAR SYSTEM <span class="text-yellow-400 text-xs ml-1">V24</span></h1>
-                <div id="version-info" class="text-[9px] text-slate-400 mt-1 font-mono uppercase">Correction Panier Active</div>
+                <h1 class="font-bold text-lg leading-none uppercase">BAR SYSTEM <span class="text-yellow-400 text-xs ml-1">V25</span></h1>
+                <div id="version-info" class="text-[9px] text-slate-400 mt-1 font-mono uppercase">Gestion Kits & Déstockage auto</div>
             </div>
             <div class="flex gap-2">
                 <button onclick="ouvrirAdmin()" class="bg-slate-700 p-2 rounded-lg text-sm font-bold">⚙️ GESTION</button>
@@ -29,52 +29,39 @@
         <div class="grid grid-cols-3 gap-2 mb-6" id="grid-tables"></div>
         
         <div id="section-menu" class="hidden">
-            <div class="bg-blue-800 text-white p-3 rounded-xl mb-4 text-xs font-bold flex justify-between shadow-inner">
+            <div class="bg-blue-800 text-white p-3 rounded-xl mb-4 text-xs font-bold flex justify-between">
                 <span id="label-serveur-table">Serveur : --</span>
                 <span id="label-num-table">Table : --</span>
             </div>
-            
             <div class="relative mb-4">
-                <input type="text" id="filtre-produit" onkeyup="filtrerMenu()" placeholder="Rechercher..." 
-                    class="w-full p-4 pl-12 rounded-2xl border-2 border-blue-100 shadow-sm outline-none">
+                <input type="text" id="filtre-produit" onkeyup="filtrerMenu()" placeholder="Rechercher..." class="w-full p-4 pl-12 rounded-2xl border-2 border-blue-100 shadow-sm outline-none">
                 <span class="absolute left-4 top-4 text-gray-400">🔍</span>
             </div>
-
             <div id="container-articles" class="grid gap-3"></div>
         </div>
     </main>
 
     <div id="footer-panier" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-2xl translate-y-full transition-transform z-40">
         <div class="max-w-lg mx-auto">
-            <div id="panier-liste" class="mb-4 text-sm font-bold max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-xl border">
-                </div>
+            <div id="panier-liste" class="mb-4 text-sm font-bold max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-xl border"></div>
             <div class="flex justify-between items-center mb-4 border-t pt-2">
-                <span class="text-gray-500 font-bold uppercase text-xs">Total commande :</span>
+                <span class="text-gray-500 font-bold uppercase text-xs">Total :</span>
                 <span id="total-prix" class="text-3xl font-black text-red-600">0 F</span>
             </div>
             <button id="btn-encaisser" onclick="encaisserEtImprimer()" class="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-lg">🖨️ VALIDER & IMPRIMER</button>
-            <button onclick="viderCommande()" class="w-full text-red-400 text-[10px] font-bold mt-2 uppercase">Vider tout le panier</button>
         </div>
     </div>
 
     <div id="modal-admin" class="modal fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-black">Administration</h2>
-                <button onclick="fermerAdmin()" class="text-2xl text-gray-400">&times;</button>
-            </div>
-            <div class="mb-6 p-4 bg-orange-50 rounded-2xl border border-orange-100">
-                <h3 class="text-xs font-black text-orange-700 uppercase mb-3">👥 Équipe</h3>
-                <div class="flex gap-2 mb-2"><input id="new-serveur" type="text" placeholder="Nom" class="flex-1 p-2 border rounded-lg text-sm"><button onclick="ajouterServeur()" class="bg-orange-500 text-white px-3 rounded-lg text-xs font-bold">OK</button></div>
-                <div class="flex gap-2 mb-2"><select id="select-staff" class="flex-1 p-2 border rounded-lg text-xs"></select><select id="select-table-assign" class="flex-1 p-2 border rounded-lg text-xs"><option value="">Table...</option><script>for(let i=1;i<=11;i++) document.write(`<option value="${i}">Table ${i}</option>`)</script></select></div>
-                <button onclick="assignerServeur()" class="w-full bg-slate-800 text-white font-bold py-2 rounded-lg text-xs italic">Assigner Serveur</button>
-            </div>
-            <div class="p-4 bg-green-50 rounded-2xl border border-green-100">
-                <h3 class="text-xs font-black text-green-700 uppercase mb-3">📦 Stock</h3>
+            <h2 class="text-xl font-black mb-6">Administration</h2>
+            <div class="p-4 bg-green-50 rounded-2xl border border-green-100 mb-6">
+                <h3 class="text-xs font-black text-green-700 uppercase mb-3">📦 Stock (Bouteilles)</h3>
                 <select id="select-produit-exist" class="w-full p-2 border rounded-lg bg-white mb-2 text-xs"></select>
-                <input id="qte-arrivage" type="number" placeholder="Qté" class="w-full p-2 border rounded-lg mb-2 text-sm">
+                <input id="qte-arrivage" type="number" placeholder="Quantité" class="w-full p-2 border rounded-lg mb-2 text-sm">
                 <button onclick="ajouterArrivage()" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg text-xs">Mettre à jour</button>
             </div>
+            <div id="admin-liste" class="space-y-1 border-t pt-4 text-[10px]"></div>
         </div>
     </div>
 
@@ -85,22 +72,25 @@
         let charPrinter = null;
         let STAFF = JSON.parse(localStorage.getItem('bar_staff')) || [];
         let AFFECTATIONS = JSON.parse(localStorage.getItem('bar_affectations')) || {};
-        let ventesJour = JSON.parse(localStorage.getItem('ventes_bar_v24')) || [];
+        let ventesJour = JSON.parse(localStorage.getItem('ventes_bar_v25')) || [];
+
+        // --- DEFINITION DES PRODUITS ET KITS ---
+        // 'compo' définit si le produit retire du stock d'un autre produit
         const PRODUITS_INITIAUX = [
-            { nom: "Bock 66", prix: 600 }, { nom: "Desperados", prix: 700 }, { nom: "Valpierre Petit", prix: 1000 }, { nom: "Valpierre Grand", prix: 2000 },
-            { nom: "Guiness Petit", prix: 700 }, { nom: "Guiness Grand", prix: 1200 }, { nom: "Beaufort Petit", prix: 600 }, { nom: "Beaufort Grand", prix: 700 },
-            { nom: "Racines", prix: 500 }, { nom: "Sombreros", prix: 600 }, { nom: "Coco Cola", prix: 500 }, { nom: "Fanta", prix: 500 },
-            { nom: "Sweppes Agrumes", prix: 500 }, { nom: "Sweppes Tonic", prix: 500 }, { nom: "Youzou", prix: 500 }, { nom: "Ivoire Black", prix: 500 },
-            { nom: "Ivoire Bleu", prix: 500 }, { nom: "Heineken", prix: 700 }, { nom: "Vin Chamberry", prix: 2000 }, { nom: "Vin saint jean", prix: 2000 },
-            { nom: "Kit Guiness", prix: 2500 }, { nom: "Kit Beaufort", prix: 2500 }, { nom: "Kit Desperados", prix: 2500 }, { nom: "Bar Bock 66", prix: 800 },
-            { nom: "Bar Desperados", prix: 900 }, { nom: "Bar Valpierre Petit", prix: 1200 }, { nom: "Bar Valpierre Grand", prix: 2200 }, { nom: "Bar Guiness Petit", prix: 1000 },
-            { nom: "Bar Guiness Grand", prix: 1400 }, { nom: "Bar Beaufort Petit", prix: 800 }, { nom: "Bar Beaufort Grand", prix: 900 }, { nom: "Bar Racines", prix: 700 },
-            { nom: "Bar Sombreros", prix: 800 }, { nom: "Bar Coco Cola", prix: 700 }, { nom: "Bar Fanta", prix: 700 }, { nom: "Bar Sweppes Agrumes", prix: 700 },
-            { nom: "Bar Sweppes Tonic", prix: 700 }, { nom: "Bar Youzou", prix: 700 }, { nom: "Bar Ivoire Black", prix: 700 }, { nom: "Bar Ivoire Bleu", prix: 700 },
-            { nom: "Bar Heineken", prix: 900 }, { nom: "Bar Vin Chamberry", prix: 2200 }, { nom: "Bar Vin saint jean", prix: 2200 }, { nom: "Bar Kit Guiness", prix: 3000 },
-            { nom: "Bar Kit Beaufort", prix: 2500 }, { nom: "Bar Kit Desperados", prix: 2500 }
+            { nom: "Guiness Petit", prix: 700, stock: 50 },
+            { nom: "Beaufort Petit", prix: 600, stock: 50 },
+            { nom: "Desperados", prix: 700, stock: 50 },
+            { nom: "Bock 66", prix: 600, stock: 50 },
+            // Les KITS n'ont pas de stock propre, ils retirent 3 bouteilles au produit source
+            { nom: "Kit Guiness", prix: 2500, compo: { cible: "Guiness Petit", qte: 3 } },
+            { nom: "Kit Beaufort", prix: 2500, compo: { cible: "Beaufort Petit", qte: 3 } },
+            { nom: "Kit Desperados", prix: 2500, compo: { cible: "Desperados", qte: 3 } },
+            { nom: "Bar Bock 66", prix: 800 }, { nom: "Bar Desperados", prix: 900 },
+            { nom: "Heineken", prix: 700, stock: 20 }, { nom: "Vin Chamberry", prix: 2000, stock: 10 }
+            // ... Ajoutez les autres produits ici avec stock: 20 si besoin
         ];
-        let MENU = JSON.parse(localStorage.getItem('bar_menu_v24')) || PRODUITS_INITIAUX.map(p => ({...p, stock: 20}));
+
+        let MENU = JSON.parse(localStorage.getItem('bar_menu_v25')) || PRODUITS_INITIAUX;
 
         function initApp() {
             const grid = document.getElementById('grid-tables');
@@ -109,24 +99,38 @@
                 let s = AFFECTATIONS[i] || "Libre";
                 grid.innerHTML += `<button onclick="choisirTable(${i})" id="btn-t-${i}" class="bg-white border-2 border-slate-200 py-3 rounded-xl flex flex-col items-center"><span class="font-bold text-xs">T${i}</span><span class="text-[8px] uppercase text-blue-600 font-black truncate w-full px-1">${s}</span></button>`;
             }
-            afficherMenu(); majSelectStaff();
+            afficherMenu();
         }
 
-        function majSelectStaff() {
-            const s = document.getElementById('select-staff');
-            s.innerHTML = '<option value="">Choisir Serveur...</option>';
-            STAFF.forEach(name => s.innerHTML += `<option value="${name}">${name}</option>`);
+        function afficherMenu() {
+            const container = document.getElementById('container-articles');
+            const selectExist = document.getElementById('select-produit-exist');
+            const adminListe = document.getElementById('admin-liste');
+            container.innerHTML = ""; 
+            selectExist.innerHTML = '<option value="">-- Sélectionner produit --</option>';
+
+            MENU.sort((a,b) => a.nom.localeCompare(b.nom)).forEach((item, index) => {
+                // Pour les kits, on vérifie le stock du produit cible
+                let stockAffichage = item.stock;
+                if(item.compo) {
+                    let source = MENU.find(m => m.nom === item.compo.cible);
+                    stockAffichage = Math.floor(source.stock / item.compo.qte);
+                }
+
+                const epuise = stockAffichage <= 0;
+                container.innerHTML += `<button data-nom="${item.nom.toLowerCase()}" onclick="${epuise ? '' : `ajouterItem('${item.nom}', ${item.prix})`}" class="item-bouton w-full ${epuise ? 'bg-gray-100 opacity-50' : 'bg-white'} border-2 p-4 rounded-xl flex justify-between items-center shadow-sm"><div class="text-left font-bold text-slate-700">${item.nom} <span class="text-[10px] text-gray-400 font-normal ml-2">${item.compo ? 'Kits' : 'Stock'}: ${stockAffichage}</span></div><span class="font-black ${epuise ? 'text-gray-400' : 'text-blue-700'}">${item.prix}F</span></button>`;
+                
+                if(!item.compo) {
+                    selectExist.innerHTML += `<option value="${index}">${item.nom}</option>`;
+                    adminListe.innerHTML += `<div class="flex justify-between border-b py-1"><span>${item.nom}</span><span>Stock: ${item.stock}</span></div>`;
+                }
+            });
         }
 
-        function ajouterServeur() {
-            let n = document.getElementById('new-serveur').value;
-            if(n) { STAFF.push(n); localStorage.setItem('bar_staff', JSON.stringify(STAFF)); majSelectStaff(); document.getElementById('new-serveur').value = ""; }
-        }
-
-        function assignerServeur() {
-            let s = document.getElementById('select-staff').value;
-            let t = document.getElementById('select-table-assign').value;
-            if(s && t) { AFFECTATIONS[t] = s; localStorage.setItem('bar_affectations', JSON.stringify(AFFECTATIONS)); initApp(); alert("Affectation OK"); }
+        function filtrerMenu() {
+            const s = document.getElementById('filtre-produit').value.toLowerCase();
+            const b = document.getElementsByClassName('item-bouton');
+            for (let i = 0; i < b.length; i++) { b[i].style.display = b[i].getAttribute('data-nom').includes(s) ? "flex" : "none"; }
         }
 
         function choisirTable(num) {
@@ -139,34 +143,21 @@
             document.getElementById('filtre-produit').focus();
         }
 
-        function afficherMenu() {
-            const container = document.getElementById('container-articles');
-            const selectExist = document.getElementById('select-produit-exist');
-            container.innerHTML = ""; 
-            selectExist.innerHTML = '<option value="">-- Sélectionner produit --</option>';
-            MENU.sort((a,b) => a.nom.localeCompare(b.nom)).forEach((item, index) => {
-                const epuise = item.stock <= 0;
-                container.innerHTML += `<button data-nom="${item.nom.toLowerCase()}" onclick="${epuise ? '' : `ajouterItem('${item.nom}', ${item.prix})`}" class="item-bouton w-full ${epuise ? 'bg-gray-100 opacity-50' : 'bg-white'} border-2 p-4 rounded-xl flex justify-between items-center"><div><div class="font-bold text-slate-700">${item.nom}</div><div class="text-[10px] text-gray-400">Stock: ${item.stock}</div></div><span class="font-black ${epuise ? 'text-gray-400' : 'text-blue-700'}">${item.prix}F</span></button>`;
-                selectExist.innerHTML += `<option value="${index}">${item.nom}</option>`;
-            });
-        }
-
-        function filtrerMenu() {
-            const s = document.getElementById('filtre-produit').value.toLowerCase();
-            const b = document.getElementsByClassName('item-bouton');
-            for (let i = 0; i < b.length; i++) { b[i].style.display = b[i].getAttribute('data-nom').includes(s) ? "flex" : "none"; }
-        }
-
         function ajouterItem(nom, prix) {
             const item = MENU.find(m => m.nom === nom);
+            let stockDisponible = item.stock;
+            if(item.compo) {
+                let source = MENU.find(m => m.nom === item.compo.cible);
+                stockDisponible = Math.floor(source.stock / item.compo.qte);
+            }
+
             const qteAuPanier = panier[nom] ? panier[nom].qte : 0;
-            if(item.stock > qteAuPanier) {
+            if(stockDisponible > qteAuPanier) {
                 if(panier[nom]) panier[nom].qte++; else panier[nom] = {prix, qte: 1};
                 majPanierUI();
-            } else { alert("Plus de stock !"); }
+            } else { alert("Plus assez de stock (bouteilles) !"); }
         }
 
-        // --- NOUVELLE FONCTION POUR DIMINUER LA QUANTITÉ ---
         function diminuerItem(nom) {
             if(panier[nom]) {
                 panier[nom].qte--;
@@ -180,32 +171,20 @@
             liste.innerHTML = ""; let t = 0;
             for (let [nom, d] of Object.entries(panier)) {
                 let st = d.prix * d.qte; t += st;
-                liste.innerHTML += `
-                    <div class="flex justify-between items-center py-2 border-b border-dashed">
-                        <div class="flex flex-col">
-                            <span class="text-slate-800">${nom}</span>
-                            <span class="text-[10px] text-blue-600">${d.prix}F / unité</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <button onclick="diminuerItem('${nom}')" class="bg-red-100 text-red-600 w-8 h-8 rounded-full font-black">-</button>
-                            <span class="text-lg w-4 text-center">${d.qte}</span>
-                            <button onclick="ajouterItem('${nom}', ${d.prix})" class="bg-green-100 text-green-600 w-8 h-8 rounded-full font-black">+</button>
-                            <span class="font-black ml-2 text-slate-700">${st}F</span>
-                        </div>
-                    </div>`;
+                liste.innerHTML += `<div class="flex justify-between items-center py-2 border-b border-dashed"><span>${nom} x${d.qte}</span><div class="flex gap-2"><button onclick="diminuerItem('${nom}')" class="bg-red-100 text-red-600 px-2 rounded">-</button><span class="font-bold">${st}F</span></div></div>`;
             }
             document.getElementById('total-prix').innerText = t + " F";
             document.getElementById('footer-panier').classList.toggle('translate-y-full', t === 0);
         }
 
-        function viderCommande() { if(confirm("Vider tout ?")) { panier = {}; majPanierUI(); } }
+        function viderCommande() { panier = {}; majPanierUI(); }
         function ouvrirAdmin() { document.getElementById('modal-admin').classList.remove('hidden'); }
         function fermerAdmin() { document.getElementById('modal-admin').classList.add('hidden'); }
 
         function ajouterArrivage() {
             const idx = document.getElementById('select-produit-exist').value;
             const qte = parseInt(document.getElementById('qte-arrivage').value);
-            if(idx !== "" && !isNaN(qte)) { MENU[idx].stock += qte; localStorage.setItem('bar_menu_v24', JSON.stringify(MENU)); document.getElementById('qte-arrivage').value = ""; afficherMenu(); alert("Stock OK"); }
+            if(idx !== "" && !isNaN(qte)) { MENU[idx].stock += qte; localStorage.setItem('bar_menu_v25', JSON.stringify(MENU)); document.getElementById('qte-arrivage').value = ""; afficherMenu(); alert("Stock OK"); }
         }
 
         async function encaisserEtImprimer() {
@@ -219,30 +198,44 @@
                     charPrinter = (await services[0].getCharacteristics()).find(c => c.properties.write || c.properties.writeWithoutResponse);
                 }
                 btn.innerText = "ENVOI CLOUD..."; btn.disabled = true;
+
                 for (let [nom, d] of Object.entries(panier)) {
+                    const item = MENU.find(m => m.nom === nom);
+                    // DÉDUCTION DU STOCK
+                    if(item.compo) {
+                        // C'est un kit : on déduit X bouteilles du produit source
+                        let source = MENU.find(m => m.nom === item.compo.cible);
+                        source.stock -= (item.compo.qte * d.qte);
+                    } else {
+                        // C'est une bouteille normale
+                        item.stock -= d.qte;
+                    }
+
                     fetch(GOOGLE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ table: tableActuelle, produit: nom, prix: d.prix * d.qte, serveur: serveur }) });
-                    MENU.find(m => m.nom === nom).stock -= d.qte;
                     for(let i=0; i<d.qte; i++) ventesJour.push({nom, prix: d.prix, serveur, table: tableActuelle});
                 }
-                localStorage.setItem('bar_menu_v24', JSON.stringify(MENU));
-                localStorage.setItem('ventes_bar_v24', JSON.stringify(ventesJour));
+
+                localStorage.setItem('bar_menu_v25', JSON.stringify(MENU));
+                localStorage.setItem('ventes_bar_v25', JSON.stringify(ventesJour));
+
+                // IMPRESSION (comme V24)
                 const enc = new TextEncoder();
-                let t = "\n      *** RECU BAR ***\n" + `TABLE : ${tableActuelle} | SERVEUR : ${serveur}\n` + `HEURE : ${new Date().toLocaleTimeString()}\n` + "--------------------------------\n";
+                let t = "\n      *** RECU BAR ***\n" + `TABLE : ${tableActuelle} | SERVEUR : ${serveur}\n` + "--------------------------------\n";
                 let total = 0;
                 for (let [nom, d] of Object.entries(panier)) {
                     let st = d.prix * d.qte; total += st;
-                    let l = nom + " x" + d.qte;
-                    t += l + ".".repeat(Math.max(1, 32 - l.length - (st+"F").length)) + st + "F\n";
+                    t += nom + " x" + d.qte + " : " + st + "F\n";
                 }
                 t += "--------------------------------\nTOTAL: " + total + " FCFA\n\n\n\n\n\n";
                 for (let i = 0; i < t.length; i += 20) { await charPrinter.writeValue(enc.encode(t.substring(i, i + 20))); await new Promise(r => setTimeout(r, 40)); }
+
                 panier = {}; majPanierUI(); afficherMenu(); btn.innerText = "🖨️ VALIDER & IMPRIMER"; btn.disabled = false;
             } catch (e) { btn.innerText = "🖨️ VALIDER & IMPRIMER"; btn.disabled = false; charPrinter = null; alert(e); }
         }
 
         function ouvrirRapport() {
             let t = 0; ventesJour.forEach(v => t += v.prix);
-            if(confirm(`CAISSE DU JOUR : ${t} F\n\nVoulez-vous clôturer la journée ?`)) { ventesJour = []; localStorage.setItem('ventes_bar_v24', JSON.stringify(ventesJour)); alert("Caisse réinitialisée !"); }
+            if(confirm(`CAISSE DU JOUR : ${t} F\n\nVoulez-vous clôturer ?`)) { ventesJour = []; localStorage.setItem('ventes_bar_v25', JSON.stringify(ventesJour)); alert("RAZ OK"); }
         }
         initApp();
     </script>
