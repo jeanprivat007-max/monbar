@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bar Pro V26 - Couleurs & Contrôle</title>
+    <title>Bar PALAUH V27</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .table-selected { background-color: #ef4444 !important; color: white; border-color: #b91c1c; transform: scale(0.95); }
         .modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
-        .btn-dispo { border-left: 8px solid #22c55e; } /* Vert */
-        .btn-critique { border-left: 8px solid #f97316; } /* Orange */
-        .btn-vide { border-left: 8px solid #ef4444; opacity: 0.5; background-color: #f1f5f9; } /* Rouge */
+        .btn-dispo { border-left: 8px solid #22c55e; }
+        .btn-critique { border-left: 8px solid #f97316; }
+        .btn-vide { border-left: 8px solid #ef4444; opacity: 0.5; background-color: #f1f5f9; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans text-slate-900">
@@ -18,31 +18,24 @@
     <nav class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="max-w-lg mx-auto flex justify-between items-center">
             <div>
-                <h1 class="font-bold text-lg leading-none uppercase">PALAUH BAR <span class="text-yellow-400 text-xs ml-1">V26</span></h1>
-                <div id="version-info" class="text-[9px] text-slate-400 mt-1 font-mono uppercase">Indicateurs de Stock Actifs</div>
+                <h1 class="font-bold text-lg leading-none uppercase">PALAUH BAR <span class="text-yellow-400 text-xs ml-1">V27</span></h1>
+                <div class="text-[9px] text-slate-400 mt-1 font-mono">STOCK INITIALISÉ À 20</div>
             </div>
             <div class="flex gap-2">
-                <button onclick="ouvrirAdmin()" class="bg-slate-700 p-2 rounded-lg text-sm font-bold">⚙️ GESTION</button>
-                <button onclick="ouvrirRapport()" class="bg-blue-600 px-3 py-2 rounded-lg text-xs font-bold uppercase">📊 CAISSE</button>
+                <button onclick="ouvrirAdmin()" class="bg-slate-700 p-2 rounded-lg text-sm font-bold">⚙️</button>
+                <button onclick="ouvrirRapport()" class="bg-blue-600 px-3 py-2 rounded-lg text-xs font-bold">📊 CAISSE</button>
             </div>
         </div>
     </nav>
 
     <main class="max-w-lg mx-auto p-4 pb-48">
         <div class="grid grid-cols-3 gap-2 mb-6" id="grid-tables"></div>
-        
         <div id="section-menu" class="hidden">
-            <div class="bg-slate-800 text-white p-3 rounded-xl mb-4 text-xs font-bold flex justify-between">
-                <span id="label-serveur-table">Serveur : --</span>
-                <span id="label-num-table">Table : --</span>
-            </div>
-            
             <div class="relative mb-4">
                 <input type="text" id="filtre-produit" onkeyup="filtrerMenu()" placeholder="Rechercher une boisson..." 
-                    class="w-full p-4 pl-12 rounded-2xl border-2 border-slate-200 shadow-sm outline-none focus:border-blue-500 transition-all">
+                    class="w-full p-4 pl-12 rounded-2xl border-2 border-slate-200 shadow-sm outline-none focus:border-blue-500">
                 <span class="absolute left-4 top-4 text-gray-400">🔍</span>
             </div>
-
             <div id="container-articles" class="grid gap-3"></div>
         </div>
     </main>
@@ -51,23 +44,20 @@
         <div class="max-w-lg mx-auto">
             <div id="panier-liste" class="mb-4 text-sm font-bold max-h-48 overflow-y-auto bg-gray-50 p-3 rounded-xl border"></div>
             <div class="flex justify-between items-center mb-4 border-t pt-2">
-                <span class="text-gray-500 font-bold uppercase text-xs">Total à payer :</span>
+                <span class="text-gray-500 font-bold text-xs uppercase">Total :</span>
                 <span id="total-prix" class="text-3xl font-black text-red-600">0 F</span>
             </div>
-            <button id="btn-encaisser" onclick="encaisserEtImprimer()" class="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-lg">🖨️ VALIDER & IMPRIMER</button>
+            <button id="btn-encaisser" onclick="encaisserEtImprimer()" class="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-lg uppercase">🖨️ Valider & Imprimer</button>
         </div>
     </div>
 
     <div id="modal-admin" class="modal fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h2 class="text-xl font-black mb-6">Administration</h2>
-            <div class="p-4 bg-green-50 rounded-2xl border border-green-100 mb-6 text-xs">
-                <h3 class="font-black text-green-700 uppercase mb-3">📦 Stock (Bouteilles)</h3>
-                <select id="select-produit-exist" class="w-full p-2 border rounded-lg bg-white mb-2"></select>
-                <input id="qte-arrivage" type="number" placeholder="Quantité" class="w-full p-2 border rounded-lg mb-2">
-                <button onclick="ajouterArrivage()" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg">Mettre à jour</button>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-black">Stock</h2>
+                <button onclick="fermerAdmin()" class="text-2xl">&times;</button>
             </div>
-            <div id="admin-liste" class="space-y-1 border-t pt-4 text-[10px]"></div>
+            <div id="admin-liste" class="space-y-1 text-[10px] uppercase font-bold"></div>
         </div>
     </div>
 
@@ -77,23 +67,47 @@
         let panier = {}; 
         let charPrinter = null;
         let AFFECTATIONS = JSON.parse(localStorage.getItem('bar_affectations')) || {};
-        let ventesJour = JSON.parse(localStorage.getItem('ventes_bar_v26')) || [];
+        let ventesJour = JSON.parse(localStorage.getItem('ventes_bar_v27')) || [];
 
-        const PRODUITS_INITIAUX = [
-            { nom: "Guiness Petit", prix: 700, stock: 20 },
-            { nom: "Beaufort Petit", prix: 600, stock: 20 },
-            { nom: "Desperados", prix: 700, stock: 20 },
-            { nom: "Bock 66", prix: 600, stock: 20 },
-            { nom: "Kit Guiness", prix: 2500, compo: { cible: "Guiness Petit", qte: 3 } },
-            { nom: "Kit Beaufort", prix: 2500, compo: { cible: "Beaufort Petit", qte: 3 } },
-            { nom: "Kit Desperados", prix: 2500, compo: { cible: "Desperados", qte: 3 } }
+        const PRODUITS_BASE = [
+            { nom: "Bock 66", prix: 600 }, { nom: "Desperados", prix: 700 },
+            { nom: "Valpierre Petit", prix: 1000 }, { nom: "Valpierre Grand", prix: 2000 },
+            { nom: "Guiness Petit", prix: 700 }, { nom: "Guiness Grand", prix: 1200 },
+            { nom: "Beaufort Petit", prix: 600 }, { nom: "Beaufort Grand", prix: 700 },
+            { nom: "Racines", prix: 500 }, { nom: "Sombreros", prix: 600 },
+            { nom: "Coco Cola", prix: 500 }, { nom: "Fanta", prix: 500 },
+            { nom: "Sweppes Agrumes", prix: 500 }, { nom: "Sweppes Tonic", prix: 500 },
+            { nom: "Youzou", prix: 500 }, { nom: "Ivoire Black", prix: 500 },
+            { nom: "Ivoire Bleu", prix: 500 }, { nom: "Heineken", prix: 700 },
+            { nom: "Vin Chamberry", prix: 2000 }, { nom: "Vin saint jean", prix: 2000 },
+            { nom: "Bar Bock 66", prix: 800 }, { nom: "Bar Desperados", prix: 900 },
+            { nom: "Bar Valpierre Petit", prix: 1200 }, { nom: "Bar Valpierre Grand", prix: 2200 },
+            { nom: "Bar Guiness Petit", prix: 1000 }, { nom: "Bar Guiness Grand", prix: 1400 },
+            { nom: "Bar Beaufort Petit", prix: 800 }, { nom: "Bar Beaufort Grand", prix: 900 },
+            { nom: "Bar Racines", prix: 700 }, { nom: "Bar Sombreros", prix: 800 },
+            { nom: "Bar Coco Cola", prix: 700 }, { nom: "Bar Fanta", prix: 700 },
+            { nom: "Bar Sweppes Agrumes", prix: 700 }, { nom: "Bar Sweppes Tonic", prix: 700 },
+            { nom: "Bar Youzou", prix: 700 }, { nom: "Bar Ivoire Black", prix: 700 },
+            { nom: "Bar Ivoire Bleu", prix: 700 }, { nom: "Bar Heineken", prix: 900 },
+            { nom: "Bar Vin Chamberry", prix: 2200 }, { nom: "Bar Vin saint jean", prix: 2200 }
         ];
 
-        let MENU = JSON.parse(localStorage.getItem('bar_menu_v26')) || PRODUITS_INITIAUX;
+        const KITS = [
+            { nom: "Kit Guiness", prix: 2500, compo: { cible: "Guiness Petit", qte: 3 } },
+            { nom: "Kit Beaufort", prix: 2500, compo: { cible: "Beaufort Petit", qte: 3 } },
+            { nom: "Kit Desperados", prix: 2500, compo: { cible: "Desperados", qte: 3 } },
+            { nom: "Bar Kit Guiness", prix: 3000, compo: { cible: "Bar Guiness Petit", qte: 3 } },
+            { nom: "Bar Kit Beaufort", prix: 2500, compo: { cible: "Bar Beaufort Petit", qte: 3 } },
+            { nom: "Bar Kit Desperados", prix: 2500, compo: { cible: "Bar Desperados", qte: 3 } }
+        ];
+
+        let MENU = JSON.parse(localStorage.getItem('bar_menu_v27')) || [
+            ...PRODUITS_BASE.map(p => ({...p, stock: 20})),
+            ...KITS
+        ];
 
         function initApp() {
-            const grid = document.getElementById('grid-tables');
-            grid.innerHTML = "";
+            const grid = document.getElementById('grid-tables'); grid.innerHTML = "";
             for(let i=1; i<=11; i++) {
                 let s = AFFECTATIONS[i] || "Libre";
                 grid.innerHTML += `<button onclick="choisirTable(${i})" id="btn-t-${i}" class="bg-white border-2 border-slate-200 py-3 rounded-xl flex flex-col items-center"><span class="font-bold text-xs">T${i}</span><span class="text-[8px] uppercase text-blue-600 font-black truncate w-full px-1">${s}</span></button>`;
@@ -103,33 +117,13 @@
 
         function afficherMenu() {
             const container = document.getElementById('container-articles');
-            const selectExist = document.getElementById('select-produit-exist');
             const adminListe = document.getElementById('admin-liste');
             container.innerHTML = ""; adminListe.innerHTML = "";
-            selectExist.innerHTML = '<option value="">-- Produit --</option>';
-
-            MENU.sort((a,b) => a.nom.localeCompare(b.nom)).forEach((item, index) => {
-                let stockAffich = item.stock;
-                if(item.compo) {
-                    let src = MENU.find(m => m.nom === item.compo.cible);
-                    stockAffich = Math.floor(src.stock / item.compo.qte);
-                }
-
-                let classeCouleur = "btn-dispo";
-                if(stockAffich <= 0) classeCouleur = "btn-vide";
-                else if(stockAffich < 5) classeCouleur = "btn-critique";
-
-                container.innerHTML += `
-                    <button data-nom="${item.nom.toLowerCase()}" onclick="${stockAffich <= 0 ? '' : `ajouterItem('${item.nom}', ${item.prix})`}" 
-                        class="item-bouton w-full bg-white border-2 p-4 rounded-xl flex justify-between items-center shadow-sm ${classeCouleur}">
-                        <div class="text-left font-bold text-slate-700">${item.nom} <span class="text-[10px] text-gray-400 font-normal ml-2">${item.compo ? 'Kits' : 'Stock'}: ${stockAffich}</span></div>
-                        <span class="font-black ${stockAffich <= 0 ? 'text-gray-400' : 'text-blue-700'}">${item.prix}F</span>
-                    </button>`;
-                
-                if(!item.compo) {
-                    selectExist.innerHTML += `<option value="${index}">${item.nom}</option>`;
-                    adminListe.innerHTML += `<div class="flex justify-between border-b py-1"><span>${item.nom}</span><span>Stock: ${item.stock}</span></div>`;
-                }
+            MENU.sort((a,b) => a.nom.localeCompare(b.nom)).forEach((item) => {
+                let s = item.stock; if(item.compo) { let src = MENU.find(m => m.nom === item.compo.cible); s = Math.floor(src.stock / item.compo.qte); }
+                let col = s <= 0 ? "btn-vide" : (s < 5 ? "btn-critique" : "btn-dispo");
+                container.innerHTML += `<button data-nom="${item.nom.toLowerCase()}" onclick="${s <= 0 ? '' : `ajouterItem('${item.nom}', ${item.prix})`}" class="item-bouton w-full bg-white border-2 p-4 rounded-xl flex justify-between items-center shadow-sm ${col}"><div class="text-left font-bold text-slate-700">${item.nom} <span class="text-[10px] text-gray-400 font-normal ml-2">S: ${s}</span></div><span class="font-black ${s <= 0 ? 'text-gray-400' : 'text-blue-700'}">${item.prix}F</span></button>`;
+                if(!item.compo) adminListe.innerHTML += `<div class="flex justify-between border-b py-1"><span>${item.nom}</span><span>Stock: ${item.stock}</span></div>`;
             });
         }
 
@@ -144,70 +138,29 @@
             document.querySelectorAll('#grid-tables button').forEach(b => b.classList.remove('table-selected'));
             document.getElementById('btn-t-'+num).classList.add('table-selected');
             document.getElementById('section-menu').classList.remove('hidden');
-            document.getElementById('label-serveur-table').innerText = "Serveur : " + (AFFECTATIONS[num] || "À assigner");
-            document.getElementById('label-num-table').innerText = "Table : " + num;
         }
 
         function ajouterItem(nom, prix) {
             const item = MENU.find(m => m.nom === nom);
-            let stockDispo = item.stock;
-            if(item.compo) {
-                let src = MENU.find(m => m.nom === item.compo.cible);
-                stockDispo = Math.floor(src.stock / item.compo.qte);
-            }
-            const qtePanier = panier[nom] ? panier[nom].qte : 0;
-            if(stockDispo > qtePanier) {
-                if(panier[nom]) panier[nom].qte++; else panier[nom] = {prix, qte: 1};
-                majPanierUI();
-            } else { alert("Stock insuffisant !"); }
+            let s = item.stock; if(item.compo) { let src = MENU.find(m => m.nom === item.compo.cible); s = Math.floor(src.stock / item.compo.qte); }
+            const q = panier[nom] ? panier[nom].qte : 0;
+            if(s > q) { if(panier[nom]) panier[nom].qte++; else panier[nom] = {prix, qte: 1}; majPanierUI(); }
         }
 
-        function retirerUn(nom) {
-            if(panier[nom]) {
-                panier[nom].qte--;
-                if(panier[nom].qte <= 0) delete panier[nom];
-                majPanierUI();
-            }
-        }
+        function retirerUn(nom) { if(panier[nom]) { panier[nom].qte--; if(panier[nom].qte <= 0) delete panier[nom]; majPanierUI(); } }
 
         function majPanierUI() {
-            const liste = document.getElementById('panier-liste');
-            liste.innerHTML = ""; let t = 0;
+            const liste = document.getElementById('panier-liste'); liste.innerHTML = ""; let t = 0;
             for (let [nom, d] of Object.entries(panier)) {
                 let st = d.prix * d.qte; t += st;
-                liste.innerHTML += `
-                    <div class="flex justify-between items-center py-2 border-b">
-                        <span class="font-bold text-slate-700 text-xs">${nom}</span>
-                        <div class="flex items-center gap-2">
-                            <button onclick="retirerUn('${nom}')" class="bg-red-100 text-red-600 px-3 py-1 rounded-lg font-bold">-</button>
-                            <span class="w-4 text-center">${d.qte}</span>
-                            <button onclick="ajouterItem('${nom}', ${d.prix})" class="bg-green-100 text-green-600 px-3 py-1 rounded-lg font-bold">+</button>
-                            <span class="ml-2 font-black">${st}F</span>
-                        </div>
-                    </div>`;
+                liste.innerHTML += `<div class="flex justify-between items-center py-2 border-b"><span class="font-bold text-slate-700 text-xs">${nom}</span><div class="flex items-center gap-2"><button onclick="retirerUn('${nom}')" class="bg-red-100 text-red-600 px-3 py-1 rounded-lg font-bold">-</button><span class="w-4 text-center">${d.qte}</span><button onclick="ajouterItem('${nom}', ${d.prix})" class="bg-green-100 text-green-600 px-3 py-1 rounded-lg font-bold">+</button><span class="ml-2 font-black">${st}F</span></div></div>`;
             }
             document.getElementById('total-prix').innerText = t + " F";
             document.getElementById('footer-panier').classList.toggle('translate-y-full', t === 0);
         }
 
-        function viderCommande() { panier = {}; majPanierUI(); }
-        function ouvrirAdmin() { document.getElementById('modal-admin').classList.remove('hidden'); }
-        function fermerAdmin() { document.getElementById('modal-admin').classList.add('hidden'); }
-
-        function ajouterArrivage() {
-            const idx = document.getElementById('select-produit-exist').value;
-            const qte = parseInt(document.getElementById('qte-arrivage').value);
-            if(idx !== "" && !isNaN(qte)) { 
-                MENU[idx].stock += qte; 
-                localStorage.setItem('bar_menu_v26', JSON.stringify(MENU));
-                document.getElementById('qte-arrivage').value = "";
-                afficherMenu(); alert("Stock mis à jour !");
-            }
-        }
-
         async function encaisserEtImprimer() {
-            const btn = document.getElementById('btn-encaisser');
-            const serveur = AFFECTATIONS[tableActuelle] || "Inconnu";
+            const btn = document.getElementById('btn-encaisser'); const serveur = AFFECTATIONS[tableActuelle] || "Caissière";
             try {
                 if (!charPrinter) {
                     const device = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', '0000ff00-0000-1000-8000-00805f9b34fb'] });
@@ -215,33 +168,27 @@
                     const services = await serverConn.getPrimaryServices();
                     charPrinter = (await services[0].getCharacteristics()).find(c => c.properties.write || c.properties.writeWithoutResponse);
                 }
-                btn.innerText = "☁️ CLOUD..."; btn.disabled = true;
+                btn.innerText = "ENVOI..."; btn.disabled = true;
                 for (let [nom, d] of Object.entries(panier)) {
                     const item = MENU.find(m => m.nom === nom);
-                    if(item.compo) { MENU.find(m => m.nom === item.compo.cible).stock -= (item.compo.qte * d.qte); } 
-                    else { item.stock -= d.qte; }
+                    if(item.compo) { MENU.find(m => m.nom === item.compo.cible).stock -= (item.compo.qte * d.qte); } else { item.stock -= d.qte; }
                     fetch(GOOGLE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ table: tableActuelle, produit: nom, prix: d.prix * d.qte, serveur: serveur }) });
                     for(let i=0; i<d.qte; i++) ventesJour.push({nom, prix: d.prix, serveur, table: tableActuelle});
                 }
-                localStorage.setItem('bar_menu_v26', JSON.stringify(MENU));
-                localStorage.setItem('ventes_bar_v26', JSON.stringify(ventesJour));
+                localStorage.setItem('bar_menu_v27', JSON.stringify(MENU));
+                localStorage.setItem('ventes_bar_v27', JSON.stringify(ventesJour));
                 const enc = new TextEncoder();
-                let t = "\n      *** PALAUH BAR ***\n" + `TABLE : ${tableActuelle} | SERVEUR : ${serveur}\n` + "--------------------------------\n";
-                let total = 0;
-                for (let [nom, d] of Object.entries(panier)) {
-                    let st = d.prix * d.qte; total += st;
-                    t += nom + " x" + d.qte + " : " + st + "F\n";
-                }
-                t += "--------------------------------\nTOTAL: " + total + " FCFA\n\n\n\n\n\n";
+                let t = "\n      *** PALAUH BAR ***\n" + `TABLE : ${tableActuelle}\n` + "--------------------------------\n";
+                for (let [nom, d] of Object.entries(panier)) { t += nom + " x" + d.qte + " : " + (d.prix*d.qte) + "F\n"; }
+                t += "--------------------------------\nTOTAL: " + document.getElementById('total-prix').innerText + "\n\n\n\n\n\n";
                 for (let i = 0; i < t.length; i += 20) { await charPrinter.writeValue(enc.encode(t.substring(i, i + 20))); await new Promise(r => setTimeout(r, 40)); }
-                panier = {}; majPanierUI(); afficherMenu(); btn.innerText = "🖨️ VALIDER & IMPRIMER"; btn.disabled = false;
-            } catch (e) { btn.innerText = "🖨️ VALIDER & IMPRIMER"; btn.disabled = false; charPrinter = null; alert(e); }
+                panier = {}; majPanierUI(); afficherMenu(); btn.innerText = "Valider & Imprimer"; btn.disabled = false;
+            } catch (e) { btn.disabled = false; charPrinter = null; alert(e); }
         }
 
-        function ouvrirRapport() {
-            let t = 0; ventesJour.forEach(v => t += v.prix);
-            if(confirm(`CAISSE : ${t} F\n\nRéinitialiser ?`)) { ventesJour = []; localStorage.setItem('ventes_bar_v26', JSON.stringify(ventesJour)); alert("RAZ OK"); }
-        }
+        function ouvrirRapport() { let t = 0; ventesJour.forEach(v => t += v.prix); if(confirm(`CAISSE : ${t} F\nClôturer la journée ?`)) { ventesJour = []; localStorage.setItem('ventes_bar_v27', JSON.stringify(ventesJour)); alert("RAZ OK"); } }
+        function ouvrirAdmin() { document.getElementById('modal-admin').classList.remove('hidden'); }
+        function fermerAdmin() { document.getElementById('modal-admin').classList.add('hidden'); }
         initApp();
     </script>
 </body>
