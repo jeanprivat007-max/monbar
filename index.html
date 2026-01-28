@@ -3,41 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palauh Pro V32 - Gestion Totale</title>
+    <title>Palauh Pro V33 - Cloud Time</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .table-selected { background-color: #ef4444 !important; color: white; }
+        .table-selected { background-color: #ef4444 !important; color: white; transform: scale(0.95); }
         .modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
-        .loader { border-top-color: #10b981; animation: spinner 0.6s linear infinite; }
-        @keyframes spinner { to {transform: rotate(360deg);} }
+        .btn-dispo { border-left: 8px solid #10b981; }
+        .btn-critique { border-left: 8px solid #f97316; }
+        .btn-vide { border-left: 8px solid #ef4444; opacity: 0.6; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans text-slate-900">
 
     <nav class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="max-w-lg mx-auto flex justify-between items-center">
-            <h1 class="font-bold text-lg uppercase tracking-tighter">Palauh <span class="text-emerald-400 text-xs">V32</span></h1>
+            <div>
+                <h1 class="font-bold text-lg uppercase tracking-tighter">Palauh <span class="text-emerald-400">DB</span></h1>
+                <div id="app-version" class="text-[8px] text-slate-400 font-mono uppercase">Version : 28/01/2026 - 12:20</div>
+            </div>
             <div class="flex gap-2">
-                <button onclick="ouvrirAdmin()" class="bg-slate-700 p-2 rounded-lg text-xs font-bold">⚙️ GESTION</button>
-                <button onclick="ouvrirHistorique()" class="bg-emerald-600 px-3 py-2 rounded-lg text-xs font-bold uppercase">📊 CLOUD</button>
+                <button onclick="ouvrirAdmin()" class="bg-slate-700 p-2 rounded-lg text-xs font-bold uppercase italic">⚙️ Gérer</button>
+                <button onclick="ouvrirHistorique()" class="bg-emerald-600 px-3 py-2 rounded-lg text-xs font-bold uppercase">📊 Cloud</button>
             </div>
         </div>
     </nav>
 
     <main class="max-w-lg mx-auto p-4 pb-48">
-        <div id="loading-status" class="text-center py-10 hidden">
-            <div class="loader w-8 h-8 border-4 border-slate-200 rounded-full mx-auto mb-2"></div>
-            <p class="text-xs font-bold text-slate-400 uppercase">Synchro Cloud...</p>
+        <div id="loading-status" class="text-center py-10">
+            <p class="text-[10px] font-black text-emerald-500 animate-pulse uppercase tracking-widest">Connexion Supabase en cours...</p>
         </div>
         
         <div class="grid grid-cols-3 gap-2 mb-6" id="grid-tables"></div>
         
         <div id="section-menu" class="hidden">
-            <input type="text" id="filtre" onkeyup="filtrer()" placeholder="Rechercher..." class="w-full p-4 mb-4 rounded-2xl border-2 border-emerald-100 shadow-sm outline-none focus:border-emerald-500">
+            <div class="bg-slate-800 text-white p-3 rounded-xl mb-4 text-[10px] font-bold flex justify-between uppercase">
+                <span id="label-serveur-table">Serveur : --</span>
+                <span id="label-num-table">Table : --</span>
+            </div>
+            <input type="text" id="filtre" onkeyup="filtrerMenu()" placeholder="Rechercher une boisson..." 
+                class="w-full p-4 mb-4 rounded-2xl border-2 border-emerald-100 shadow-sm outline-none focus:border-emerald-500 transition-all">
             <div id="container-articles" class="grid gap-3"></div>
         </div>
     </main>
+
+    <div id="footer-panier" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-2xl translate-y-full transition-transform z-40">
+        <div class="max-w-lg mx-auto">
+            <div id="panier-liste" class="mb-4 text-sm font-bold max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-xl border"></div>
+            <div class="flex justify-between items-center mb-4 pt-2 border-t">
+                <span class="text-gray-400 font-bold uppercase text-[10px]">Total Commande :</span>
+                <span id="total-prix" class="text-3xl font-black text-red-600">0 F</span>
+            </div>
+            <button id="btn-encaisser" onclick="encaisserEtSauver()" class="w-full bg-emerald-600 text-white font-black py-4 rounded-xl shadow-lg text-lg active:scale-95 transition-all">🖨️ VALIDER & SAUVEGARDER</button>
+        </div>
+    </div>
 
     <div id="modal-admin" class="modal fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -45,26 +64,18 @@
                 <h2 class="text-xl font-black">Configuration DG</h2>
                 <button onclick="fermerAdmin()" class="text-2xl text-gray-400">&times;</button>
             </div>
-
             <div class="mb-8 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                <h3 class="text-[10px] font-black text-emerald-700 uppercase mb-3 tracking-widest">📦 Nouveau Produit</h3>
+                <h3 class="text-[10px] font-black text-emerald-700 uppercase mb-3 tracking-widest">📦 Nouveau Produit Cloud</h3>
                 <div class="space-y-2">
-                    <input id="p-nom" type="text" placeholder="Nom (ex: Bock 66)" class="w-full p-2 border rounded-lg text-sm">
+                    <input id="p-nom" type="text" placeholder="Nom du produit" class="w-full p-2 border rounded-lg text-sm">
                     <div class="flex gap-2">
-                        <input id="p-prix" type="number" placeholder="Prix (F)" class="w-full p-2 border rounded-lg text-sm">
+                        <input id="p-prix" type="number" placeholder="Prix Vente" class="w-full p-2 border rounded-lg text-sm">
                         <input id="p-stock" type="number" placeholder="Stock Initial" class="w-full p-2 border rounded-lg text-sm">
                     </div>
-                    <button id="btn-creer-p" onclick="creerProduit()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-sm shadow-md">CRÉER & ENVOYER AU CLOUD</button>
+                    <button id="btn-creer-p" onclick="creerProduitSurCloud()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-sm shadow-md">CRÉER DANS LA BASE</button>
                 </div>
             </div>
-
-            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <h3 class="text-[10px] font-black text-slate-500 uppercase mb-3">👥 Personnel</h3>
-                <div class="space-y-2">
-                    <input id="new-serveur" type="text" placeholder="Nom serveur" class="w-full p-2 border rounded-lg text-sm">
-                    <button onclick="ajouterServeur()" class="w-full bg-slate-800 text-white font-bold py-2 rounded-lg text-sm">AJOUTER</button>
-                </div>
-            </div>
+            <button onclick="fermerAdmin()" class="w-full text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-4">Fermer</button>
         </div>
     </div>
 
@@ -75,91 +86,80 @@
 
         let tableActuelle = null;
         let MENU = [];
-        let STAFF = JSON.parse(localStorage.getItem('bar_staff')) || [];
+        let panier = {};
         let AFFECTATIONS = JSON.parse(localStorage.getItem('bar_aff')) || {};
 
-        // INITIALISATION : Charger les produits depuis Supabase
-        async function chargerProduitsCloud() {
-            document.getElementById('loading-status').classList.remove('hidden');
+        async function initApp() {
             const { data, error } = await _supabase.from('stocks').select('*').order('nom');
-            
             if (!error && data) {
                 MENU = data;
-                localStorage.setItem('bar_menu_v32', JSON.stringify(MENU));
                 afficherMenu();
+                document.getElementById('loading-status').classList.add('hidden');
             }
-            document.getElementById('loading-status').classList.add('hidden');
-            initApp();
+            const grid = document.getElementById('grid-tables'); grid.innerHTML = "";
+            for(let i=1; i<=11; i++) {
+                let s = AFFECTATIONS[i] || "Libre";
+                grid.innerHTML += `<button onclick="choisirTable(${i})" id="btn-t-${i}" class="bg-white border-2 border-slate-100 py-4 rounded-xl flex flex-col items-center shadow-sm"><span class="font-bold text-xs">T${i}</span><span class="text-[8px] uppercase text-emerald-600 font-bold">${s}</span></button>`;
+            }
         }
 
-        // CRÉER UN PRODUIT DANS L'APP ET SUPABASE
-        async function creerProduit() {
+        async function creerProduitSurCloud() {
             const nom = document.getElementById('p-nom').value;
             const prix = parseInt(document.getElementById('p-prix').value);
             const stock = parseInt(document.getElementById('p-stock').value);
             const btn = document.getElementById('btn-creer-p');
 
-            if (!nom || !prix) return alert("Nom et Prix obligatoires !");
+            if (!nom || isNaN(prix)) return alert("Vérifiez le nom et le prix !");
 
             try {
-                btn.innerText = "⏳ ENVOI EN COURS...";
-                btn.disabled = true;
-
-                // 1. Envoyer à Supabase
-                const { error } = await _supabase.from('stocks').insert([
-                    { nom: nom, prix: prix, quantite: stock, seuil_alerte: 5 }
-                ]);
-
+                btn.innerText = "⏳ ENVOI EN COURS..."; btn.disabled = true;
+                const { error } = await _supabase.from('stocks').insert([{ nom: nom, prix: prix, quantite: stock, seuil_alerte: 5 }]);
                 if (error) throw error;
-
-                // 2. Mettre à jour localement
-                alert("Produit créé avec succès !");
-                document.getElementById('p-nom').value = "";
-                document.getElementById('p-prix').value = "";
-                document.getElementById('p-stock').value = "";
-                
-                await chargerProduitsCloud(); // Rafraîchir la liste
-                fermerAdmin();
-
-            } catch (e) {
-                alert("Erreur : " + e.message);
-            } finally {
-                btn.innerText = "CRÉER & ENVOYER AU CLOUD";
-                btn.disabled = false;
-            }
-        }
-
-        function initApp() {
-            const grid = document.getElementById('grid-tables'); grid.innerHTML = "";
-            for(let i=1; i<=11; i++) {
-                let s = AFFECTATIONS[i] || "Libre";
-                grid.innerHTML += `<button onclick="choisirTable(${i})" id="btn-t-${i}" class="bg-white border-2 border-slate-100 py-4 rounded-xl flex flex-col items-center"><span class="font-bold text-xs">T${i}</span><span class="text-[8px] uppercase text-emerald-600 font-bold">${s}</span></button>`;
-            }
+                alert("Produit ajouté au Cloud !");
+                location.reload();
+            } catch (e) { alert("Erreur : " + e.message); btn.disabled = false; btn.innerText = "CRÉER DANS LA BASE"; }
         }
 
         function afficherMenu() {
-            const container = document.getElementById('container-articles');
-            container.innerHTML = "";
+            const container = document.getElementById('container-articles'); container.innerHTML = "";
             MENU.forEach(item => {
-                const qte = item.quantite || 0;
-                const col = qte <= 0 ? "opacity-50 border-red-100" : (qte < 5 ? "border-orange-200" : "border-emerald-100");
-                container.innerHTML += `
-                    <button onclick="ajouterPanier('${item.nom}', ${item.prix}, ${qte})" class="bg-white border-2 p-4 rounded-xl flex justify-between items-center shadow-sm ${col}">
-                        <div class="text-left">
-                            <p class="font-bold text-slate-700">${item.nom}</p>
-                            <p class="text-[10px] text-slate-400 uppercase">Stock: ${qte}</p>
-                        </div>
-                        <p class="font-black text-emerald-600">${item.prix} F</p>
-                    </button>`;
+                const s = item.quantite || 0;
+                const col = s <= 0 ? "btn-vide" : (s < 5 ? "btn-critique" : "btn-dispo");
+                container.innerHTML += `<button data-nom="${item.nom.toLowerCase()}" onclick="${s <= 0 ? '' : `ajouterItem('${item.nom}', ${item.prix})`}" class="item-bouton w-full bg-white border-2 p-4 rounded-xl flex justify-between items-center shadow-sm ${col}"><div class="text-left"><p class="font-bold text-slate-700">${item.nom}</p><p class="text-[9px] text-slate-400 uppercase">En stock: ${s}</p></div><p class="font-black text-emerald-600">${item.prix} F</p></button>`;
             });
         }
 
-        // ... (Le reste des fonctions de vente/panier/Bluetooth reste identique)
+        function choisirTable(num) {
+            tableActuelle = num;
+            document.querySelectorAll('#grid-tables button').forEach(b => b.classList.remove('table-selected'));
+            document.getElementById('btn-t-'+num).classList.add('table-selected');
+            document.getElementById('section-menu').classList.remove('hidden');
+        }
+
+        function ajouterItem(nom, prix) {
+            if(panier[nom]) panier[nom].qte++; else panier[nom] = {prix, qte: 1};
+            majPanierUI();
+        }
+
+        function majPanierUI() {
+            const liste = document.getElementById('panier-liste'); liste.innerHTML = ""; let t = 0;
+            for (let [nom, d] of Object.entries(panier)) {
+                let st = d.prix * d.qte; t += st;
+                liste.innerHTML += `<div class="flex justify-between items-center py-2 border-b border-dashed"><span class="text-xs font-bold text-slate-700">${nom} x${d.qte}</span><span class="font-black text-emerald-600">${st} F</span></div>`;
+            }
+            document.getElementById('total-prix').innerText = t + " F";
+            document.getElementById('footer-panier').classList.toggle('translate-y-full', t === 0);
+        }
 
         function ouvrirAdmin() { document.getElementById('modal-admin').classList.remove('hidden'); }
         function fermerAdmin() { document.getElementById('modal-admin').classList.add('hidden'); }
-        
-        chargerProduitsCloud();
+        function filtrerMenu() {
+            const s = document.getElementById('filtre').value.toLowerCase();
+            const b = document.getElementsByClassName('item-bouton');
+            for (let i = 0; i < b.length; i++) { b[i].style.display = b[i].getAttribute('data-nom').includes(s) ? "flex" : "none"; }
+        }
+
+        initApp();
     </script>
 </body>
 </html>
