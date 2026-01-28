@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bar Pro V14 - GESTION STOCK by DEBORA</title>
+    <title>Bar Stock V15 - Liste Déroulante</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .table-selected { background-color: #ef4444 !important; color: white; border-color: #b91c1c; transform: scale(0.95); }
         .modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
-        .stock-low { color: #dc2626; font-weight: bold; }
+        .input-field { width: 100%; border: 2px solid #e2e8f0; padding: 12px; rounded-xl: 0.75rem; outline: none; transition: border-color 0.2s; }
+        .input-field:focus { border-color: #3b82f6; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans text-slate-900">
@@ -16,12 +17,12 @@
     <nav class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="max-w-lg mx-auto flex justify-between items-center">
             <div>
-                <h1 class="font-bold text-lg leading-none uppercase">STOCK DU BAR <span class="text-yellow-400 text-xs ml-1">V14</span></h1>
-                <div id="version-info" class="text-[9px] text-slate-400 mt-1 font-mono uppercase">MAJ: 28/01/2026 10:45</div>
+                <h1 class="font-bold text-lg leading-none uppercase">BAR STOCK <span class="text-yellow-400 text-xs ml-1">V15</span></h1>
+                <div id="version-info" class="text-[9px] text-slate-400 mt-1 font-mono uppercase">MAJ: 28/01/2026 11:15</div>
             </div>
             <div class="flex gap-2">
-                <button onclick="ouvrirAdmin()" class="bg-slate-700 p-2 rounded-lg text-sm">⚙️ STOCK</button>
-                <button onclick="ouvrirRapport()" class="bg-blue-600 px-3 py-2 rounded-lg text-xs font-bold uppercase">📊 RAPPORT</button>
+                <button onclick="ouvrirAdmin()" class="bg-slate-700 p-2 rounded-lg text-sm font-bold">⚙️ STOCK</button>
+                <button onclick="ouvrirRapport()" class="bg-blue-600 px-3 py-2 rounded-lg text-xs font-bold uppercase">📊 CAISSE</button>
             </div>
         </div>
     </nav>
@@ -29,34 +30,49 @@
     <main class="max-w-lg mx-auto p-4 pb-48">
         <div class="grid grid-cols-3 gap-2 mb-6" id="grid-tables"></div>
         <div id="section-menu" class="hidden">
-            <h2 id="title-commande" class="text-xl font-black text-slate-800 mb-4 border-l-4 border-blue-600 pl-3 uppercase text-sm">Prise de commande</h2>
+            <h2 class="text-xl font-black text-slate-800 mb-4 border-l-4 border-blue-600 pl-3 uppercase text-sm">Vente</h2>
             <div id="container-articles" class="grid gap-3"></div>
         </div>
     </main>
 
     <div id="footer-panier" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-2xl translate-y-full transition-transform z-40">
         <div class="max-w-lg mx-auto">
-            <div id="panier-liste" class="mb-4 text-sm font-bold max-h-32 overflow-y-auto bg-gray-50 p-3 rounded-xl border border-gray-200"></div>
-            <div class="flex justify-between items-center mb-4 border-t pt-2">
-                <span class="text-gray-500 font-bold uppercase text-xs">A payer :</span>
+            <div id="panier-liste" class="mb-4 text-sm font-bold max-h-32 overflow-y-auto bg-gray-50 p-3 rounded-xl"></div>
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-gray-400 font-bold uppercase text-[10px]">Total :</span>
                 <span id="total-prix" class="text-3xl font-black text-red-600">0 F</span>
             </div>
-            <div class="flex gap-2">
-                <button onclick="viderCommande()" class="bg-gray-100 text-gray-400 px-4 py-4 rounded-xl font-bold uppercase text-[10px]">Vider</button>
-                <button onclick="encaisserEtImprimer()" class="flex-1 bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-lg">🖨️ IMPRIMER & DEDUIRE STOCK</button>
-            </div>
+            <button onclick="encaisserEtImprimer()" class="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-lg active:scale-95 transition-transform">🖨️ IMPRIMER LE REÇU</button>
+            <button onclick="viderCommande()" class="w-full text-gray-400 text-[10px] font-bold mt-2 uppercase">Vider la commande</button>
         </div>
     </div>
 
     <div id="modal-admin" class="modal fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h2 class="text-xl font-black mb-4 flex justify-between">Gestion du Stock <button onclick="fermerAdmin()" class="text-gray-400">&times;</button></h2>
-            <div class="space-y-4 mb-6 bg-blue-50 p-4 rounded-2xl">
-                <input id="new-nom" type="text" placeholder="Nom boisson" class="w-full border p-3 rounded-xl">
-                <input id="new-prix" type="number" placeholder="Prix de vente" class="w-full border p-3 rounded-xl">
-                <input id="new-stock" type="number" placeholder="Quantité en stock" class="w-full border p-3 rounded-xl">
-                <button onclick="sauvegarderProduit()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">Ajouter au stock</button>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-black">Gestion du Stock</h2>
+                <button onclick="fermerAdmin()" class="text-2xl text-gray-400">&times;</button>
             </div>
+
+            <div class="mb-8 p-4 bg-green-50 rounded-2xl border border-green-100">
+                <h3 class="text-xs font-black text-green-700 uppercase mb-3">📦 Arrivage (Existant)</h3>
+                <div class="space-y-3">
+                    <select id="select-produit-exist" class="w-full p-3 border rounded-xl bg-white"></select>
+                    <input id="qte-arrivage" type="number" placeholder="Quantité reçue" class="w-full p-3 border rounded-xl">
+                    <button onclick="ajouterArrivage()" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl">Mettre à jour le stock</button>
+                </div>
+            </div>
+
+            <div class="mb-6 p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                <h3 class="text-xs font-black text-gray-500 uppercase mb-3">🆕 Nouveau Produit</h3>
+                <div class="space-y-3">
+                    <input id="new-nom" type="text" placeholder="Nom (ex: Beaufort)" class="w-full p-3 border rounded-xl">
+                    <input id="new-prix" type="number" placeholder="Prix de vente" class="w-full p-3 border rounded-xl">
+                    <input id="new-stock" type="number" placeholder="Stock initial" class="w-full p-3 border rounded-xl">
+                    <button onclick="creerProduit()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl">Créer dans le menu</button>
+                </div>
+            </div>
+
             <div id="admin-liste" class="space-y-2 border-t pt-4"></div>
         </div>
     </div>
@@ -66,19 +82,18 @@
         let panier = {}; 
         let charPrinter = null;
         
-        // Structure MENU avec Stock : {nom, prix, stock}
-        let MENU = JSON.parse(localStorage.getItem('bar_menu_v14')) || [
+        let MENU = JSON.parse(localStorage.getItem('bar_menu_v15')) || [
             { nom: "Guiness", prix: 1000, stock: 24 },
             { nom: "Bock 66", prix: 600, stock: 48 }
         ];
 
-        let ventesJour = JSON.parse(localStorage.getItem('ventes_bar_v14')) || [];
+        let ventesJour = JSON.parse(localStorage.getItem('ventes_bar_v15')) || [];
 
         function initApp() {
             const grid = document.getElementById('grid-tables');
             grid.innerHTML = "";
             for(let i=1; i<=11; i++) {
-                grid.innerHTML += `<button onclick="choisirTable(${i})" id="btn-t-${i}" class="bg-white border-2 border-slate-200 py-3 rounded-xl font-bold text-slate-500 text-sm">Table ${i}</button>`;
+                grid.innerHTML += `<button onclick="choisirTable(${i})" id="btn-t-${i}" class="bg-white border-2 border-slate-200 py-3 rounded-xl font-bold text-slate-500 text-xs">Table ${i}</button>`;
             }
             afficherMenu();
         }
@@ -86,33 +101,73 @@
         function afficherMenu() {
             const container = document.getElementById('container-articles');
             const adminListe = document.getElementById('admin-liste');
-            container.innerHTML = ""; adminListe.innerHTML = "";
+            const selectExist = document.getElementById('select-produit-exist');
             
-            MENU.forEach((item, index) => {
-                const estEpuise = item.stock <= 0;
-                // Ecran commande
+            container.innerHTML = ""; adminListe.innerHTML = "";
+            selectExist.innerHTML = '<option value="">-- Choisir un produit --</option>';
+
+            MENU.sort((a,b) => a.nom.localeCompare(b.nom)).forEach((item, index) => {
+                // Pour la vente
+                const epuise = item.stock <= 0;
                 container.innerHTML += `
-                    <button onclick="${estEpuise ? '' : `ajouterItem('${item.nom}', ${item.prix})`}" 
-                        class="w-full ${estEpuise ? 'bg-gray-200 opacity-50' : 'bg-white'} border-2 p-4 rounded-xl flex justify-between items-center shadow-sm">
+                    <button onclick="${epuise ? '' : `ajouterItem('${item.nom}', ${item.prix})`}" class="w-full ${epuise ? 'bg-gray-200 opacity-50' : 'bg-white'} border-2 p-4 rounded-xl flex justify-between items-center shadow-sm">
                         <div class="text-left">
                             <div class="font-bold text-slate-700">${item.nom}</div>
-                            <div class="text-[10px] ${item.stock < 5 ? 'text-red-500 font-bold' : 'text-gray-400'}">Reste: ${item.stock}</div>
+                            <div class="text-[10px] ${item.stock < 10 ? 'text-red-600 font-bold' : 'text-gray-400'}">STOCK: ${item.stock}</div>
                         </div>
-                        <span class="${estEpuise ? 'text-gray-500' : 'text-blue-700'} font-black">${item.prix}F</span>
+                        <span class="font-black ${epuise ? 'text-gray-400' : 'text-blue-700'}">${item.prix}F</span>
                     </button>`;
                 
-                // Ecran Admin
+                // Pour l'admin (liste déroulante)
+                selectExist.innerHTML += `<option value="${index}">${item.nom} (Reste: ${item.stock})</option>`;
+
+                // Pour l'admin (suppression)
                 adminListe.innerHTML += `
-                    <div class="flex justify-between items-center text-xs p-3 bg-gray-50 rounded-xl border">
-                        <div><b>${item.nom}</b><br>Stock: ${item.stock}</div>
-                        <div class="flex gap-2">
-                            <button onclick="modifierStock(${index})" class="text-blue-600 font-bold uppercase">Stock +</button>
-                            <button onclick="supprimerProduit(${index})" class="text-red-500 font-bold uppercase">X</button>
-                        </div>
+                    <div class="flex justify-between items-center text-[10px] p-2 bg-gray-50 rounded-lg">
+                        <span>${item.nom}</span>
+                        <button onclick="supprimerProduit(${index})" class="text-red-400 font-bold">SUPPRIMER</button>
                     </div>`;
             });
         }
 
+        // ACTIONS STOCK
+        function ajouterArrivage() {
+            const idx = document.getElementById('select-produit-exist').value;
+            const qte = parseInt(document.getElementById('qte-arrivage').value);
+            if(idx === "" || isNaN(qte)) return alert("Sélectionne un produit et une quantité !");
+            
+            MENU[idx].stock += qte;
+            sauvegarderEtRafraichir();
+            document.getElementById('qte-arrivage').value = "";
+            alert("Stock mis à jour !");
+        }
+
+        function creerProduit() {
+            const nom = document.getElementById('new-nom').value;
+            const prix = parseInt(document.getElementById('new-prix').value);
+            const stock = parseInt(document.getElementById('new-stock').value) || 0;
+            if(!nom || isNaN(prix)) return alert("Nom et Prix obligatoires !");
+            
+            MENU.push({nom, prix, stock});
+            sauvegarderEtRafraichir();
+            document.getElementById('new-nom').value = "";
+            document.getElementById('new-prix').value = "";
+            document.getElementById('new-stock').value = "";
+        }
+
+        function supprimerProduit(index) {
+            if(confirm("Supprimer définitivement ce produit ?")) {
+                MENU.splice(index, 1);
+                sauvegarderEtRafraichir();
+            }
+        }
+
+        function sauvegarderEtRafraichir() {
+            localStorage.setItem('bar_menu_v15', JSON.stringify(MENU));
+            afficherMenu();
+        }
+
+        // LOGIQUE VENTE
         function choisirTable(num) {
             tableActuelle = num;
             document.querySelectorAll('#grid-tables button').forEach(b => b.classList.remove('table-selected'));
@@ -121,56 +176,28 @@
         }
 
         function ajouterItem(nom, prix) {
-            const itemMenu = MENU.find(m => m.nom === nom);
-            const qteActuelle = panier[nom] ? panier[nom].qte : 0;
-
-            if (itemMenu.stock > qteActuelle) {
-                if (panier[nom]) { panier[nom].qte += 1; } 
-                else { panier[nom] = { prix: prix, qte: 1 }; }
+            const item = MENU.find(m => m.nom === nom);
+            const qteDejaAuPanier = panier[nom] ? panier[nom].qte : 0;
+            if(item.stock > qteDejaAuPanier) {
+                if(panier[nom]) panier[nom].qte++; else panier[nom] = {prix, qte: 1};
                 majPanierUI();
-            } else {
-                alert("Stock insuffisant pour " + nom);
-            }
+            } else { alert("Plus de stock !"); }
         }
 
         function majPanierUI() {
             const liste = document.getElementById('panier-liste');
-            liste.innerHTML = ""; let total = 0;
-            for (let [nom, data] of Object.entries(panier)) {
-                let st = data.prix * data.qte; total += st;
-                liste.innerHTML += `<div class="flex justify-between py-1 border-b border-dashed"><span>${nom} x${data.qte}</span><span>${st} F</span></div>`;
+            liste.innerHTML = ""; let t = 0;
+            for (let [nom, d] of Object.entries(panier)) {
+                let st = d.prix * d.qte; t += st;
+                liste.innerHTML += `<div class="flex justify-between py-1 border-b border-dashed"><span>${nom} x${d.qte}</span><span>${st} F</span></div>`;
             }
-            document.getElementById('total-prix').innerText = total + " F";
-            document.getElementById('footer-panier').classList.toggle('translate-y-full', total === 0);
+            document.getElementById('total-prix').innerText = t + " F";
+            document.getElementById('footer-panier').classList.toggle('translate-y-full', t === 0);
         }
 
         function viderCommande() { panier = {}; majPanierUI(); }
         function ouvrirAdmin() { document.getElementById('modal-admin').classList.remove('hidden'); }
         function fermerAdmin() { document.getElementById('modal-admin').classList.add('hidden'); }
-
-        function sauvegarderProduit() {
-            const nom = document.getElementById('new-nom').value;
-            const prix = parseInt(document.getElementById('new-prix').value);
-            const stock = parseInt(document.getElementById('new-stock').value) || 0;
-            if(!nom || !prix) return;
-            MENU.push({nom, prix, stock});
-            localStorage.setItem('bar_menu_v14', JSON.stringify(MENU));
-            afficherMenu();
-            fermerAdmin();
-        }
-
-        function modifierStock(index) {
-            const ajout = prompt("Combien d'unités ajouter au stock pour " + MENU[index].nom + " ?");
-            if (ajout) {
-                MENU[index].stock += parseInt(ajout);
-                localStorage.setItem('bar_menu_v14', JSON.stringify(MENU));
-                afficherMenu();
-            }
-        }
-
-        function supprimerProduit(i) {
-            if(confirm("Supprimer ?")) { MENU.splice(i, 1); localStorage.setItem('bar_menu_v14', JSON.stringify(MENU)); afficherMenu(); }
-        }
 
         async function encaisserEtImprimer() {
             try {
@@ -184,25 +211,25 @@
                     charPrinter = (await services[0].getCharacteristics()).find(c => c.properties.write || c.properties.writeWithoutResponse);
                 }
 
-                // 1. DEDUCTION DU STOCK & ARCHIVE
-                for (let [nom, data] of Object.entries(panier)) {
-                    const itemMenu = MENU.find(m => m.nom === nom);
-                    itemMenu.stock -= data.qte; // On retire du stock
-                    for(let i=0; i<data.qte; i++) ventesJour.push({nom, prix: data.prix});
+                // Déduire stock et archiver
+                for (let [nom, d] of Object.entries(panier)) {
+                    MENU.find(m => m.nom === nom).stock -= d.qte;
+                    for(let i=0; i<d.qte; i++) ventesJour.push({nom, prix: d.prix});
                 }
-                localStorage.setItem('bar_menu_v14', JSON.stringify(MENU));
-                localStorage.setItem('ventes_bar_v14', JSON.stringify(ventesJour));
+                localStorage.setItem('bar_menu_v15', JSON.stringify(MENU));
+                localStorage.setItem('ventes_bar_v15', JSON.stringify(ventesJour));
 
-                // 2. IMPRESSION LIGNE PAR LIGNE (comme V13)
+                // Impression (ligne par ligne V13)
                 const enc = new TextEncoder();
                 const sleep = ms => new Promise(r => setTimeout(r, ms));
                 await charPrinter.writeValue(new Uint8Array([0x1B, 0x40]));
-                
-                let lignes = ["\n      *** RECU CLIENT ***\n", "T:" + tableActuelle + " " + new Date().toLocaleTimeString() + "\n", "--------------------------------\n"];
+                await charPrinter.writeValue(new Uint8Array([0x1B, 0x45, 0x01]));
+
+                let lignes = ["\n      *** RECU BAR ***\n", `T:${tableActuelle}  ${new Date().toLocaleTimeString()}\n`, "--------------------------------\n"];
                 let total = 0;
-                for (let [nom, data] of Object.entries(panier)) {
-                    let st = data.prix * data.qte; total += st;
-                    let l = nom + " x" + data.qte;
+                for (let [nom, d] of Object.entries(panier)) {
+                    let st = d.prix * d.qte; total += st;
+                    let l = nom + " x" + d.qte;
                     lignes.push(l + ".".repeat(Math.max(1, 32 - l.length - (st+"F").length)) + st + "F\n");
                 }
                 lignes.push("--------------------------------\nTOTAL: " + total + " FCFA\n\n\n\n\n\n");
@@ -213,17 +240,15 @@
                 }
 
                 viderCommande();
-                afficherMenu(); // Rafraîchir l'affichage des stocks
+                afficherMenu();
             } catch (e) { charPrinter = null; alert(e); }
         }
 
         function ouvrirRapport() {
             let total = 0; ventesJour.forEach(v => total += v.prix);
-            let inventaire = MENU.map(m => `${m.nom}: ${m.stock} restants`).join('\n');
-            alert("CAISSE: " + total + " F\n\nINVENTAIRE:\n" + inventaire);
+            alert("TOTAL VENTES: " + total + " F");
         }
         initApp();
     </script>
 </body>
 </html>
-
